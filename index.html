@@ -299,36 +299,39 @@ document.getElementById('battle_log').innerHTML='';
 }
 
 function animateAttack(unit, target, isPlayer, damage){
-// Find all sprite elements
+// Find alive arrays
 var pAlive = playerUnits.filter(function(u){return u.alive;});
 var eAlive = enemyUnits.filter(function(u){return u.alive;});
-// Get index in the alive array
 var atkArr = isPlayer ? pAlive : eAlive;
 var tgtArr = isPlayer ? eAlive : pAlive;
 var atkIdx = atkArr.indexOf(unit);
 var tgtIdx = tgtArr.indexOf(target);
-// Get the sprite elements
-var atkId = isPlayer ? 'psprite' : 'esprite';
-var tgtId = isPlayer ? 'esprite' : 'psprite';
-var atkEl = document.getElementById(atkId + atkIdx);
-var tgtEl = document.getElementById(tgtId + tgtIdx);
+var atkSpriteId = isPlayer ? 'psprite' : 'esprite';
+var tgtSpriteId = isPlayer ? 'esprite' : 'psprite';
+console.log('animateAttack:', atkSpriteId+atkIdx, tgtSpriteId+tgtIdx);
+var atkEl = document.getElementById(atkSpriteId + atkIdx);
+var tgtEl = document.getElementById(tgtSpriteId + tgtIdx);
 if(!atkEl) atkEl = document.getElementById('psprite0');
 if(!tgtEl) tgtEl = document.getElementById('esprite0');
-if(!atkEl || !tgtEl) return;
-// Add attacking class
-atkEl.className = atkEl.className + ' attacking';
-setTimeout(function(){ atkEl.className = atkEl.className.replace(' attacking',''); }, 200);
-// Add hit class to target
+if(!atkEl || !tgtEl){console.log('Sprites not found');return;}
+// Apply attack animation via class
+if(atkEl.classList){
+atkEl.classList.add('attacking');
+setTimeout(function(){ atkEl.classList.remove('attacking'); }, 250);
+}
+// Hit animation
 setTimeout(function(){
-tgtEl.className = tgtEl.className + ' hit';
-setTimeout(function(){ tgtEl.className = tgtEl.className.replace(' hit',''); }, 200);
-}, 100);
-// Show damage number
+if(tgtEl.classList){
+tgtEl.classList.add('hit');
+setTimeout(function(){ tgtEl.classList.remove('hit'); }, 250);
+}
+}, 120);
+// Damage number
 var dmgDiv = document.createElement('div');
 dmgDiv.className = 'floating-dmg';
 dmgDiv.textContent = '-' + damage;
 document.getElementById('battle_area').appendChild(dmgDiv);
-setTimeout(function(){ if(dmgDiv.parentNode) dmgDiv.parentNode.removeChild(dmgDiv); }, 800);
+setTimeout(function(){ if(dmgDiv.parentNode) dmgDiv.remove(); }, 800);
 }
 
 function animateHeal(target, isPlayer, amount){
@@ -464,6 +467,16 @@ startBattle();
 // Init
 renderTeamSlots();
 renderSpiritPool();
+
+// Test CSS animation
+setTimeout(function(){
+var testEl = document.getElementById('psprite0');
+if(testEl){
+testEl.className = testEl.className + ' attacking';
+setTimeout(function(){ testEl.className = testEl.className.replace(' attacking',''); }, 300);
+console.log('Test animation triggered on psprite0');
+}
+}, 1000);
 
 // Debug - check if spirits are rendered
 console.log('Spirit Tale initialized');
