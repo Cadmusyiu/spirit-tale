@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>精靈物語 - Spirit Tale</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a1a;color:#fff;font-family:system-ui,-apple-system,sans-serif;display:flex;flex-direction:column;align-items:center;min-height:100vh;overflow-x:hidden}
+body,html{width:100%;max-width:480px;margin:0 auto}
+#topbar{width:100%;max-width:480px;display:flex;justify-content:space-between;padding:10px 12px;background:#1a1a3a;border-bottom:2px solid #333;font-size:13px}
+#topbar span{color:#ffcc44}
+.card{background:#1a1a3a;border:1px solid #333;border-radius:8px;padding:8px;margin:4px 0}
+.btn{padding:10px 20px;background:#4a9eff;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:bold;cursor:pointer;width:100%}
+.btn:active{transform:scale(0.97)}
+.btn:disabled{background:#555;cursor:not-allowed}
+#game_area{width:100%;max-width:480px;flex:1;padding:8px;overflow-y:auto}
+.screen{display:none}
+.screen.active{display:block}
+.spirit-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:8px}
+.spirit-card{background:#222;border:2px solid #333;border-radius:8px;padding:8px;text-align:center;font-size:12px;cursor:pointer}
+.spirit-card:active{transform:scale(0.95)}
+.spirit-card.selected{border-color:#ffcc44;background:#2a2a4a}
+.spirit-card.assigned{border-color:#44ff44;background:#1a3a1a}
+.spirit-icon{width:50px;height:50px;border-radius:50%;margin:0 auto 6px;display:flex;align-items:center;justify-content:center;font-size:24px}
+.team-slot{background:#1a1a3a;border:2px dashed #444;border-radius:8px;padding:12px;text-align:center;min-height:80px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.team-slot.filled{border-style:solid;border-color:#4a9eff}
+.team-slot.empty{color:#666}
+#battle_area{position:relative;height:400px;background:#0d0d20;border-radius:8px;overflow:hidden}
+#battle_log{height:100px;background:#111;border-radius:8px;padding:6px;font-size:11px;overflow-y:auto;color:#aaa;margin-top:8px}
+.battle-log-line{margin:2px 0}
+.battle-log-line.atk{color:#ff6644}
+.battle-log-line.heal{color:#44ff88}
+.battle-log-line.element{color:#ffcc44}
+.spirit-sprite{position:absolute;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;transition:all 0.3s}
+.spirit-sprite.player{border:2px solid #4a9eff}
+.spirit-sprite.enemy{border:2px solid #ff4444}
+.hp-bar{position:absolute;top:-8px;left:50%;transform:translateX(-50%);width:36px;height:4px;background:#333;border-radius:2px;overflow:hidden}
+.hp-fill{height:100%;background:#44ff44;transition:width 0.3s}
+.dmg-num{position:absolute;font-size:12px;font-weight:bold;color:#ff4444;animation:floatUp 0.8s ease-out}
+@keyframes floatUp{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-30px)}}
+.stage-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:8px}
+.stage-btn{padding:16px 8px;background:#222;border:2px solid #333;border-radius:8px;text-align:center;font-size:13px;cursor:pointer}
+.stage-btn:active{transform:scale(0.95)}
+.stage-btn.unlocked{background:#1a2a1a;border-color:#44ff44;color:#44ff44}
+.stage-btn.locked{background:#222;color:#555;cursor:not-allowed}
+.stage-btn.current{background:#1a1a3a;border-color:#ffcc44}
+.modal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.9);z-index:100;justify-content:center;align-items:center;flex-direction:column;gap:16px}
+.modal.show{display:flex}
+.modal h2{font-size:24px;color:#ffcc44}
+.modal p{font-size:14px;color:#aaa;text-align:center}
+.nav-bar{display:flex;width:100%;max-width:480px;background:#1a1a3a;border-top:2px solid #333}
+.nav-btn{flex:1;padding:10px;border:none;background:#1a1a3a;color:#888;font-size:12px;cursor:pointer}
+.nav-btn.active{color:#ffcc44;background:#2a2a4a}
+.nav-btn:active{background:#333}
+#hp_bars_player,#hp_bars_enemy{position:absolute;width:100%;display:flex;justify-content:space-around;padding:4px}
+#hp_bars_player{top:4px}
+#hp_bars_enemy{bottom:4px}
+.teams-display{display:flex;justify-content:space-between;padding:4px 8px;font-size:11px}
+.teams-display .player{color:#4a9eff}
+.teams-display .enemy{color:#ff4444}
+</style>
+</head>
+<body>
+<div id="topbar">
+<div>💰 <span id="gold">0</span></div>
+<div>⭐ <span id="xp">0</span></div>
+<div>第 <span id="stage_disp">1-1</span> 關</div>
+</div>
+
+<div id="game_area">
+<!-- Team Screen -->
+<div id="screen_team" class="screen active">
+<h3 style="font-size:14px;color:#ffcc44;margin:8px 0">編制隊伍 (已選<span id="team_count">0</span>/6)</h3>
+<div id="team_slots" class="spirit-grid" style="margin-bottom:12px"></div>
+<h4 style="font-size:13px;color:#888;margin:8px 0">選擇精靈</h4>
+<div id="spirit_pool" class="spirit-grid"></div>
+<div style="margin-top:12px">
+<button class="btn" id="btn_start_battle" onclick="startBattle()" disabled>開始戰鬥 (需要6隻)</button>
+</div>
+</div>
+
+<!-- Battle Screen -->
+<div id="screen_battle" class="screen">
+<div class="teams-display">
+<div class="player">我方: <span id="player_count">0</span>隻</div>
+<div class="enemy">敵方: <span id="enemy_count">0</span>隻</div>
+</div>
+<div id="battle_area">
+<div id="hp_bars_player"></div>
+<div id="hp_bars_enemy"></div>
+</div>
+<div id="battle_log"></div>
+</div>
+
+<!-- Stage Screen -->
+<div id="screen_stage" class="screen">
+<div style="padding:8px">
+<h3 style="color:#ffcc44;margin-bottom:12px">第一章 - 精靈森林</h3>
+<div class="stage-grid">
+<div class="stage-btn unlocked current" onclick="selectStage(1,1)">1-1</div>
+<div class="stage-btn unlocked" onclick="selectStage(1,2)">1-2</div>
+<div class="stage-btn unlocked" onclick="selectStage(1,3)">1-3</div>
+<div class="stage-btn locked" onclick="alert('尚未通關前一關')">Boss</div>
+</div>
+<div style="margin-top:16px">
+<button class="btn" onclick="goTeam()">返回編隊</button>
+</div>
+</div>
+</div>
+</div>
+
+<div id="modal_victory" class="modal">
+<h2>🎉 勝利!</h2>
+<p id="rewards_text">獲得 XP: 0 | Gold: 0</p>
+<button class="btn" onclick="nextStage()">下一關</button>
+</div>
+
+<div id="modal_defeat" class="modal">
+<h2>💀 戰敗</h2>
+<p>敵人太強了，再試一次！</p>
+<button class="btn" onclick="retryStage()">重試</button>
+</div>
+
+<div class="nav-bar">
+<button class="nav-btn active" onclick="switchScreen('team')">編隊</button>
+<button class="nav-btn" onclick="switchScreen('stage')">關卡</button>
+<button class="nav-btn" onclick="switchScreen('team')">寵物</button>
+</div>
+
+<script>
+const SPIRITS = {
+flame_wing:{id:'flame_wing',name:'炎翼精靈',element:'fire',atk:25,spd:18,hp:100,def:5,color:'#ff6622',skill:'火焰彈',passive:'怒火',icon:'🔥'},
+lava_spirit:{id:'lava_spirit',name:'熔岩精靈',element:'fire',atk:20,spd:10,hp:140,def:12,color:'#cc3300',skill:'熔岩打擊',passive:'熔甲',icon:'🌋'},
+frost_wing:{id:'frost_wing',name:'霜翼精靈',element:'water',atk:12,spd:15,hp:90,def:8,color:'#22ccff',skill:'寒冰治療',passive:'護盾',icon:'💧'},
+deep_sea:{id:'deep_sea',name:'深海精靈',element:'water',atk:8,spd:12,hp:110,def:10,color:'#0055cc',skill:'洪流',passive:'深流',icon:'🌊'},
+grass_speaker:{id:'grass_speaker',name:'草語精靈',element:'earth',atk:18,spd:14,hp:105,def:10,color:'#44cc22',skill:'藤蔓打擊',passive:'根固',icon:'🌿'},
+stone_armor:{id:'stone_armor',name:'岩甲精靈',element:'earth',atk:10,spd:8,hp:130,def:18,color:'#886633',skill:'岩石壁壘',passive:'石化',icon:'🪨'}
+};
+
+const STAGES = {
+'1-1':{enemies:['flame_wing','frost_wing','grass_speaker'],xp:50,gold:20},
+'1-2':{enemies:['flame_wing','frost_wing','grass_speaker','lava_spirit'],xp:80,gold:35},
+'1-3':{enemies:['flame_wing','frost_wing','grass_speaker','lava_spirit','deep_sea'],xp:120,gold:50},
+'Boss':{enemies:['flame_wing','lava_spirit','frost_wing','deep_sea','grass_speaker','stone_armor'],xp:300,gold:150}
+};
+
+const ELEMENT_ADV = {fire:'earth',earth:'water',water:'fire'};
+
+let game = {gold:0,xp:0,stage:'1-1',unlocked:['1-1','1-2','1-3','Boss']};
+let team = [];
+let playerUnits = [], enemy Spirits = [];
+let battleInterval = null;
+let battleLog = [];
+
+function switchScreen(s){
+document.querySelectorAll('.screen').forEach(e=>e.classList.remove('active'));
+document.getElementById('screen_'+s).classList.add('active');
+document.querySelectorAll('.nav-btn').forEach(e=>e.classList.remove('active'));
+event.target.classList.add('active');
+}
+
+function goTeam(){switchScreen('team')}
+function goBattle(){switchScreen('battle')}
+
+function renderTeamSlots(){
+const container = document.getElementById('team_slots');
+container.innerHTML = '';
+for(let i=0;i<6;i++){
+const slot = document.createElement('div');
+slot.className = 'spirit-card team-slot ' + (team[i]?'filled':'empty');
+if(team[i]){
+const s = SPIRITS[team[i]];
+slot.innerHTML = '<div class="spirit-icon" style="background:'+s.color+'">'+s.icon+'</div><div style="font-size:11px">'+s.name+'</div>';
+slot.onclick = ()=>removeFromTeam(i);
+}else{
+slot.innerHTML = '<div style="font-size:20px;color:#444">+</div><div style="font-size:10px;color:#555">空位</div>';
+}
+container.appendChild(slot);
+}
+document.getElementById('team_count').textContent = team.filter(Boolean).length;
+document.getElementById('btn_start_battle').disabled = team.filter(Boolean).length < 6;
+}
+
+function renderSpiritPool(){
+const container = document.getElementById('spirit_pool');
+container.innerHTML = '';
+Object.values(SPIRITS).forEach(s=>{
+const inTeam = team.includes(s.id);
+const card = document.createElement('div');
+card.className = 'spirit-card ' + (inTeam?'assigned':'');
+card.innerHTML = '<div class="spirit-icon" style="background:'+s.color+'">'+s.icon+'</div><div style="font-size:11px">'+s.name+'</div><div style="font-size:10px;color:#888">'+s.element+' '+s.atk+'攻 '+s.hp+'血</div>';
+if(!inTeam) card.onclick = ()=>addToTeam(s.id);
+card.style.pointerEvents = inTeam?'none':'auto';
+container.appendChild(card);
+});
+}
+
+function addToTeam(id){
+if(team.filter(Boolean).length >= 6) return;
+for(let i=0;i<6;i++){if(!team[i]){team[i]=id;break}}
+renderTeamSlots();renderSpiritPool();
+}
+
+function removeFromTeam(idx){team[idx]=null;renderTeamSlots();renderSpiritPool();}
+
+function selectStage(s){
+game.stage=s;
+document.getElementById('stage_disp').textContent=s;
+document.querySelectorAll('.stage-btn').forEach(b=>b.classList.remove('current'));
+event.target.classList.add('current');
+goTeam();
+}
+
+function startBattle(){
+if(team.filter(Boolean).length<6)return;
+playerUnits=team.map(id=>{
+const s=SPIRITS[id];
+return{...s, maxHp:s.hp, curHp:s.hp, alive:true, level:1};
+});
+const stageData=STAGES[game.stage];
+enemyUnits=stageData.enemies.map(eid=>{
+const s=SPIRITS[eid];
+return{...s, maxHp:s.hp, curHp:s.hp, alive:true, level:1};
+});
+document.getElementById('player_count').textContent=playerUnits.filter(u=>u.alive).length;
+document.getElementById('enemy_count').textContent=enemyUnits.filter(u=>u.alive).length;
+renderBattle();
+battleLog=[];
+goBattle();
+setTimeout(runBattle,500);
+}
+
+function renderBattle(){
+const area=document.getElementById('battle_area');
+area.innerHTML='<div id="hp_bars_player" style="position:absolute;top:4px;width:100%;display:flex;justify-content:space-around"></div><div id="hp_bars_enemy" style="position:absolute;bottom:4px;width:100%;display:flex;justify-content:space-around"></div>';
+const pArea=document.getElementById('hp_bars_player');
+const eArea=document.getElementById('hp_bars_enemy');
+playerUnits.forEach((u,i)=>{
+const div=document.createElement('div');
+div.style.cssText='position:relative;display:flex;flex-direction:column;align-items:center';
+div.innerHTML='<div style="width:40px;height:40px;border-radius:50%;background:'+u.color+';border:2px solid #4a9eff;display:flex;align-items:center;justify-content:center;font-size:18px">'+u.icon+'</div><div style="width:36px;height:4px;background:#333;border-radius:2px;margin-top:2px"><div style="height:100%;background:#44ff44;width:'+(u.curHp/u.maxHp*100)+'%"></div></div>';
+pArea.appendChild(div);
+});
+enemyUnits.forEach((u,i)=>{
+const div=document.createElement('div');
+div.style.cssText='position:relative;display:flex;flex-direction:column;align-items:center';
+div.innerHTML='<div style="width:40px;height:40px;border-radius:50%;background:'+u.color+';border:2px solid #ff4444;display:flex;align-items:center;justify-content:center;font-size:18px">'+u.icon+'</div><div style="width:36px;height:4px;background:#333;border-radius:2px;margin-top:2px"><div style="height:100%;background:#44ff44;width:'+(u.curHp/u.maxHp*100)+'%"></div></div>';
+eArea.appendChild(div);
+});
+document.getElementById('battle_log').innerHTML='';
+}
+
+function addLog(msg,type=''){
+battleLog.push({msg,type});
+const log=document.getElementById('battle_log');
+const line=document.createElement('div');
+line.className='battle-log-line '+type;
+line.textContent=msg;
+log.appendChild(line);
+log.scrollTop=log.scrollHeight;
+}
+
+function calcDmg(atk,def,elemAdv){
+const base=Math.max(5,atk*1.5-def*0.3);
+return Math.floor(base*(elemAdv?1.5:1));
+}
+
+function getTarget(units,prefer='lowestHp'){
+const alive=units.filter(u=>u.alive);
+if(!alive.length)return null;
+if(prefer==='lowestHp')return alive.reduce((a,b)=>a.curHp<a.curHp?a:b);
+return alive[Math.floor(Math.random()*alive.length)];
+}
+
+function doAction(unit,isPlayer){
+const allies=isPlayer?playerUnits:enemyUnits;
+const enemies=isPlayer?enemyUnits:playerUnits;
+const healType=['frost_wing','deep_sea'].includes(unit.id);
+if(healType){
+const target=getTarget(allies,'lowestHp');
+if(target && target.curHp<target.maxHp){
+const heal=Math.floor(unit.atk*0.8);
+target.curHp=Math.min(target.maxHp,target.curHp+heal);
+addLog((isPlayer?'我':'敵')+' '+unit.name+' 治療 '+target.name+' +'+heal,'heal');
+}
+}else{
+const target=getTarget(enemies,'lowestHp');
+if(target){
+let dmg=calcDmg(unit.atk,target.def,ELEMENT_ADV[unit.element]===target.element);
+target.curHp=Math.max(0,target.curHp-dmg);
+const elemStr=ELEMENT_ADV[unit.element]===target.element?' (元素優勢!) ':'';
+addLog((isPlayer?'我':'敵')+' '+unit.name+' 攻擊 '+target.name+' 造成 '+dmg+' 傷害'+elemStr,'atk');
+if(target.curHp<=0){target.alive=false;addLog(target.name+' 被擊敗!','element');}
+}
+}
+}
+
+function runBattle(){
+battleInterval=setInterval(()=>{
+playerUnits.filter(u=>u.alive).sort((a,b)=>b.spd-a.spd).forEach(u=>doAction(u,true));
+enemyUnits.filter(u=>u.alive).sort((a,b)=>b.spd-a.spd).forEach(u=>doAction(u,false));
+renderBattle();
+document.getElementById('player_count').textContent=playerUnits.filter(u=>u.alive).length;
+document.getElementById('enemy_count').textContent=enemyUnits.filter(u=>u.alive).length;
+const pAlive=playerUnits.filter(u=>u.alive).length;
+const eAlive=enemyUnits.filter(u=>u.alive).length;
+if(eAlive===0){clearInterval(battleInterval);showVictory();}
+if(pAlive===0){clearInterval(battleInterval);showDefeat();}
+},800);
+}
+
+function showVictory(){
+const data=STAGES[game.stage];
+game.gold+=data.gold;
+game.xp+=data.xp;
+document.getElementById('gold').textContent=game.gold;
+document.getElementById('xp').textContent=game.xp;
+document.getElementById('rewards_text').textContent='獲得 XP: '+data.xp+' | Gold: '+data.gold;
+document.getElementById('modal_victory').classList.add('show');
+}
+
+function showDefeat(){
+document.getElementById('modal_defeat').classList.add('show');
+}
+
+function nextStage(){
+document.getElementById('modal_victory').classList.remove('show');
+const stages=['1-1','1-2','1-3','Boss'];
+const idx=stages.indexOf(game.stage);
+if(idx<stages.length-1){game.stage=stages[idx+1];document.getElementById('stage_disp').textContent=game.stage;}
+goTeam();
+}
+
+function retryStage(){
+document.getElementById('modal_defeat').classList.remove('show');
+startBattle();
+}
+
+// Init
+renderTeamSlots();
+renderSpiritPool();
+</script>
+</body>
+</html>
