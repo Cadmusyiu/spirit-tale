@@ -235,6 +235,7 @@ setTimeout(runBattle,500);
 }
 
 function renderBattle(){
+console.log('Rendering battle, playerUnits:', playerUnits.length, 'enemyUnits:', enemyUnits.length);
 const area=document.getElementById('battle_area');
 area.innerHTML='<div id="player_spirits" style="position:absolute;left:15px;top:10px;display:flex;flex-direction:column;gap:8px"></div><div id="enemy_spirits" style="position:absolute;right:15px;top:10px;display:flex;flex-direction:column;gap:8px"></div>';
 const pArea=document.getElementById('player_spirits');
@@ -266,53 +267,62 @@ document.getElementById('battle_log').innerHTML='';
 }
 
 function animateAttack(attacker, target, isPlayer, damage){
+// Get the alive filtered units
 const pAlive=playerUnits.filter(u=>u.alive);
 const eAlive=enemyUnits.filter(u=>u.alive);
-const atkIdx=pAlive.indexOf(attacker);
-const tgtIdx=eAlive.indexOf(target);
-const atkEl=document.getElementById('psprite'+(isPlayer?atkIdx:atkIdx));
-const tgtEl=document.getElementById('esprite'+(isPlayer?tgtIdx:tgtIdx));
-if(!atkEl){console.log('atkEl not found:',atkIdx,isPlayer);return;}
-if(!tgtEl){console.log('tgtEl not found:',tgtIdx,isPlayer);return;}
-if(isPlayer){
-atkEl.style.transition='transform 0.15s';
-atkEl.style.transform='translateX(50px) scale(1.3)';
-setTimeout(()=>{atkEl.style.transform='translateX(0) scale(1)';},150);
-tgtEl.style.transition='transform 0.1s';
-setTimeout(()=>{tgtEl.style.transform='translateX(-12px) scale(0.9)';},50);
-setTimeout(()=>{tgtEl.style.transform='translateX(0) scale(1)';},200);
-}else{
-atkEl.style.transition='transform 0.15s';
-atkEl.style.transform='translateX(-50px) scale(1.3)';
-setTimeout(()=>{atkEl.style.transform='translateX(0) scale(1)';},150);
-tgtEl.style.transition='transform 0.1s';
-setTimeout(()=>{tgtEl.style.transform='translateX(12px) scale(0.9)';},50);
-setTimeout(()=>{tgtEl.style.transform='translateX(0) scale(1)';},200);
+// Find which sprite element to animate
+const atkSpriteId = isPlayer ? 'psprite' : 'esprite';
+const tgtSpriteId = isPlayer ? 'esprite' : 'psprite';
+// Find index in the alive arrays
+const atkArr = isPlayer ? pAlive : eAlive;
+const tgtArr = isPlayer ? eAlive : pAlive;
+const atkIdx = atkArr.indexOf(attacker);
+const tgtIdx = tgtArr.indexOf(target);
+const atkEl = document.getElementById(atkSpriteId + atkIdx);
+const tgtEl = document.getElementById(tgtSpriteId + tgtIdx);
+if(!atkEl || !tgtEl){
+console.log('Sprite not found:', atkSpriteId+atkIdx, tgtSpriteId+tgtIdx);
+return;
 }
-const dmgDiv=document.createElement('div');
-dmgDiv.style.cssText='position:absolute;font-size:20px;font-weight:bold;color:#ff4444;text-shadow:2px 2px 3px #000;animation:floatUp 0.8s ease-out forwards;pointer-events:none;z-index:50';
-dmgDiv.textContent='-'+damage;
-dmgDiv.style.left='50%';
-dmgDiv.style.top='35%';
-dmgDiv.style.transform='translateX(-50%)';
+// Apply animations
+const dir = isPlayer ? 1 : -1;
+atkEl.style.transition = 'transform 0.15s ease-out';
+atkEl.style.transform = 'translateX(' + (40*dir) + 'px) scale(1.2)';
+setTimeout(function(){
+atkEl.style.transform = 'translateX(0) scale(1)';
+}, 150);
+tgtEl.style.transition = 'transform 0.1s';
+tgtEl.style.transform = 'translateX(' + (-10*dir) + 'px)';
+setTimeout(function(){
+tgtEl.style.transform = 'translateX(0)';
+}, 200);
+// Floating damage number
+var dmgDiv = document.createElement('div');
+dmgDiv.style.cssText = 'position:absolute;font-size:22px;font-weight:bold;color:#ff4444;text-shadow:2px 2px 4px #000;animation:floatUp 0.8s forwards;pointer-events:none;z-index:50';
+dmgDiv.textContent = '-' + damage;
+dmgDiv.style.left = '50%';
+dmgDiv.style.top = '30%';
+dmgDiv.style.transform = 'translateX(-50%)';
 document.getElementById('battle_area').appendChild(dmgDiv);
-setTimeout(()=>dmgDiv.remove(),800);
+setTimeout(function(){ dmgDiv.remove(); }, 800);
 }
 
 function animateHeal(target, isPlayer, amount){
 const pAlive=playerUnits.filter(u=>u.alive);
 const eAlive=enemyUnits.filter(u=>u.alive);
-const tIdx=(isPlayer?pAlive:eAlive).indexOf(target);
-const el=document.getElementById((isPlayer?'psprite':'esprite')+tIdx);
-if(!el)return;
-const healDiv=document.createElement('div');
-healDiv.style.cssText='position:absolute;font-size:18px;font-weight:bold;color:#44ff88;text-shadow:2px 2px 3px #000;animation:floatUp 0.8s ease-out forwards;pointer-events:none;z-index:50';
-healDiv.textContent='+'+amount+' HP';
-healDiv.style.left='50%';
-healDiv.style.top='35%';
-healDiv.style.transform='translateX(-50%)';
+const spriteId = isPlayer ? 'psprite' : 'esprite';
+const arr = isPlayer ? pAlive : eAlive;
+const tIdx = arr.indexOf(target);
+const el = document.getElementById(spriteId + tIdx);
+if(!el) return;
+var healDiv = document.createElement('div');
+healDiv.style.cssText = 'position:absolute;font-size:18px;font-weight:bold;color:#44ff88;text-shadow:2px 2px 3px #000;animation:floatUp 0.8s forwards;pointer-events:none;z-index:50';
+healDiv.textContent = '+' + amount + ' HP';
+healDiv.style.left = '50%';
+healDiv.style.top = '30%';
+healDiv.style.transform = 'translateX(-50%)';
 document.getElementById('battle_area').appendChild(healDiv);
-setTimeout(()=>healDiv.remove(),800);
+setTimeout(function(){ healDiv.remove(); }, 800);
 }
 
 function addLog(msg,type=''){
@@ -338,6 +348,7 @@ return alive[Math.floor(Math.random()*alive.length)];
 }
 
 function doAction(unit,isPlayer){
+console.log('doAction:', unit.name, isPlayer?'player':'enemy');
 const allies=isPlayer?playerUnits:enemyUnits;
 const enemies=isPlayer?enemyUnits:playerUnits;
 const healType=['frost_wing','deep_sea'].includes(unit.id);
@@ -406,6 +417,10 @@ startBattle();
 // Init
 renderTeamSlots();
 renderSpiritPool();
+
+// Debug - check if spirits are rendered
+console.log('Spirit Tale initialized');
+console.log('SPIRITS:', Object.keys(SPIRITS));
 </script>
 </body>
 </html>
