@@ -62,6 +62,36 @@ body,html{width:100%;max-width:480px;margin:0 auto}
 .teams-display{display:flex;justify-content:space-between;padding:4px 8px;font-size:11px}
 .teams-display .player{color:#4a9eff}
 .teams-display .enemy{color:#ff4444}
+
+.spirit-sprite{
+transition: all 0.15s ease-out;
+}
+.spirit-sprite.attacking{
+animation: attackPulse 0.2s ease-out;
+}
+.spirit-sprite.hit{
+animation: hitShake 0.2s ease-out;
+}
+@keyframes attackPulse{
+0%{transform: scale(1)}
+50%{transform: scale(1.3)}
+100%{transform: scale(1)}
+}
+@keyframes hitShake{
+0%{transform: translateX(0)}
+25%{transform: translateX(-10px)}
+50%{transform: translateX(10px)}
+75%{transform: translateX(-5px)}
+100%{transform: translateX(0)}
+}
+.floating-dmg{
+position:absolute;left:50%;top:30%;font-size:26px;font-weight:bold;color:#ff4444;text-shadow:2px 2px 4px #000;animation:floatingDmg 0.8s forwards;pointer-events:none;z-index:50;
+}
+@keyframes floatingDmg{
+0%{opacity:1;transform:translate(-50%,0) scale(1.2)}
+100%{opacity:0;transform:translate(-50%,-50px) scale(0.8)}
+}
+
 </style>
 </head>
 <body>
@@ -269,63 +299,57 @@ document.getElementById('battle_log').innerHTML='';
 }
 
 function animateAttack(unit, target, isPlayer, damage){
-// Simple approach: just show damage number and shake
-const pAlive = playerUnits.filter(u=>u.alive);
-const eAlive = enemyUnits.filter(u=>u.alive);
-const allAlive = isPlayer ? eAlive : pAlive;
-const myAlive = isPlayer ? pAlive : eAlive;
-const tgtIdx = allAlive.indexOf(target);
-const atkIdx = myAlive.indexOf(unit);
-const atkId = isPlayer ? 'psprite' : 'esprite';
-const tgtId = isPlayer ? 'esprite' : 'psprite';
-const atkEl = document.getElementById(atkId + atkIdx);
-const tgtEl = document.getElementById(tgtId + tgtIdx);
-if(!atkEl || !tgtEl){
-console.log('animateAttack fail:', atkId+atkIdx, tgtId+tgtIdx);
-return;
-}
-// Attack animation - move toward target
-var origTransform = atkEl.style.transform;
-var origLeft = atkEl.parentElement.style.left;
-var moveDir = isPlayer ? 1 : -1;
-atkEl.parentElement.style.left = (isPlayer ? 60 : 60) + 'px';
-atkEl.style.transition = 'transform 0.15s';
-atkEl.style.transform = 'translateX(' + (30*moveDir) + 'px) scale(1.2)';
+// Find all sprite elements
+var pAlive = playerUnits.filter(function(u){return u.alive;});
+var eAlive = enemyUnits.filter(function(u){return u.alive;});
+// Get index in the alive array
+var atkArr = isPlayer ? pAlive : eAlive;
+var tgtArr = isPlayer ? eAlive : pAlive;
+var atkIdx = atkArr.indexOf(unit);
+var tgtIdx = tgtArr.indexOf(target);
+// Get the sprite elements
+var atkId = isPlayer ? 'psprite' : 'esprite';
+var tgtId = isPlayer ? 'esprite' : 'psprite';
+var atkEl = document.getElementById(atkId + atkIdx);
+var tgtEl = document.getElementById(tgtId + tgtIdx);
+if(!atkEl) atkEl = document.getElementById('psprite0');
+if(!tgtEl) tgtEl = document.getElementById('esprite0');
+if(!atkEl || !tgtEl) return;
+// Add attacking class
+atkEl.className = atkEl.className + ' attacking';
+setTimeout(function(){ atkEl.className = atkEl.className.replace(' attacking',''); }, 200);
+// Add hit class to target
 setTimeout(function(){
-atkEl.style.transform = 'translateX(0) scale(1)';
-}, 150);
-// Target gets hit
-setTimeout(function(){
-tgtEl.style.transition = 'transform 0.1s';
-tgtEl.style.transform = 'translateX(' + (-15*moveDir) + 'px)';
-setTimeout(function(){
-tgtEl.style.transform = 'translateX(0)';
-}, 150);
+tgtEl.className = tgtEl.className + ' hit';
+setTimeout(function(){ tgtEl.className = tgtEl.className.replace(' hit',''); }, 200);
 }, 100);
-// Damage number
+// Show damage number
 var dmgDiv = document.createElement('div');
-dmgDiv.style.cssText = 'position:absolute;left:50%;top:25%;font-size:24px;font-weight:bold;color:#ff4444;text-shadow:2px 2px 4px #000;animation:floatUp 0.8s forwards;pointer-events:none;z-index:50';
+dmgDiv.className = 'floating-dmg';
 dmgDiv.textContent = '-' + damage;
 document.getElementById('battle_area').appendChild(dmgDiv);
-setTimeout(function(){ dmgDiv.remove(); }, 800);
+setTimeout(function(){ if(dmgDiv.parentNode) dmgDiv.parentNode.removeChild(dmgDiv); }, 800);
 }
 
 function animateHeal(target, isPlayer, amount){
-const pAlive=playerUnits.filter(u=>u.alive);
-const eAlive=enemyUnits.filter(u=>u.alive);
-const spriteId = isPlayer ? 'psprite' : 'esprite';
-const arr = isPlayer ? pAlive : eAlive;
-const tIdx = arr.indexOf(target);
-const el = document.getElementById(spriteId + tIdx);
+var pAlive = playerUnits.filter(function(u){return u.alive;});
+var eAlive = enemyUnits.filter(function(u){return u.alive;});
+var arr = isPlayer ? pAlive : eAlive;
+var tIdx = arr.indexOf(target);
+var spriteId = isPlayer ? 'psprite' : 'esprite';
+var el = document.getElementById(spriteId + tIdx);
+if(!el) el = document.getElementById('psprite0');
 if(!el) return;
+// Glow effect for healing
+el.style.boxShadow = '0 0 25px #44ff88';
+setTimeout(function(){ el.style.boxShadow = ''; }, 300);
+// Show heal number
 var healDiv = document.createElement('div');
-healDiv.style.cssText = 'position:absolute;font-size:18px;font-weight:bold;color:#44ff88;text-shadow:2px 2px 3px #000;animation:floatUp 0.8s forwards;pointer-events:none;z-index:50';
+healDiv.className = 'floating-dmg';
+healDiv.style.color = '#44ff88';
 healDiv.textContent = '+' + amount + ' HP';
-healDiv.style.left = '50%';
-healDiv.style.top = '30%';
-healDiv.style.transform = 'translateX(-50%)';
 document.getElementById('battle_area').appendChild(healDiv);
-setTimeout(function(){ healDiv.remove(); }, 800);
+setTimeout(function(){ if(healDiv.parentNode) healDiv.parentNode.removeChild(healDiv); }, 800);
 }
 
 function addLog(msg,type=''){
