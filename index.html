@@ -226,8 +226,10 @@ enemyUnits=stageData.enemies.map(eid=>{
 const s=SPIRITS[eid];
 return{...s, maxHp:s.hp, curHp:s.hp, alive:true, level:1};
 });
+function updateCounters(){
 document.getElementById('player_count').textContent=playerUnits.filter(u=>u.alive).length;
 document.getElementById('enemy_count').textContent=enemyUnits.filter(u=>u.alive).length;
+}
 renderBattle();
 battleLog=[];
 goBattle();
@@ -266,43 +268,44 @@ area.appendChild(vsDiv);
 document.getElementById('battle_log').innerHTML='';
 }
 
-function animateAttack(attacker, target, isPlayer, damage){
-// Get the alive filtered units
-const pAlive=playerUnits.filter(u=>u.alive);
-const eAlive=enemyUnits.filter(u=>u.alive);
-// Find which sprite element to animate
-const atkSpriteId = isPlayer ? 'psprite' : 'esprite';
-const tgtSpriteId = isPlayer ? 'esprite' : 'psprite';
-// Find index in the alive arrays
-const atkArr = isPlayer ? pAlive : eAlive;
-const tgtArr = isPlayer ? eAlive : pAlive;
-const atkIdx = atkArr.indexOf(attacker);
-const tgtIdx = tgtArr.indexOf(target);
-const atkEl = document.getElementById(atkSpriteId + atkIdx);
-const tgtEl = document.getElementById(tgtSpriteId + tgtIdx);
+function animateAttack(unit, target, isPlayer, damage){
+// Simple approach: just show damage number and shake
+const pAlive = playerUnits.filter(u=>u.alive);
+const eAlive = enemyUnits.filter(u=>u.alive);
+const allAlive = isPlayer ? eAlive : pAlive;
+const myAlive = isPlayer ? pAlive : eAlive;
+const tgtIdx = allAlive.indexOf(target);
+const atkIdx = myAlive.indexOf(unit);
+const atkId = isPlayer ? 'psprite' : 'esprite';
+const tgtId = isPlayer ? 'esprite' : 'psprite';
+const atkEl = document.getElementById(atkId + atkIdx);
+const tgtEl = document.getElementById(tgtId + tgtIdx);
 if(!atkEl || !tgtEl){
-console.log('Sprite not found:', atkSpriteId+atkIdx, tgtSpriteId+tgtIdx);
+console.log('animateAttack fail:', atkId+atkIdx, tgtId+tgtIdx);
 return;
 }
-// Apply animations
-const dir = isPlayer ? 1 : -1;
-atkEl.style.transition = 'transform 0.15s ease-out';
-atkEl.style.transform = 'translateX(' + (40*dir) + 'px) scale(1.2)';
+// Attack animation - move toward target
+var origTransform = atkEl.style.transform;
+var origLeft = atkEl.parentElement.style.left;
+var moveDir = isPlayer ? 1 : -1;
+atkEl.parentElement.style.left = (isPlayer ? 60 : 60) + 'px';
+atkEl.style.transition = 'transform 0.15s';
+atkEl.style.transform = 'translateX(' + (30*moveDir) + 'px) scale(1.2)';
 setTimeout(function(){
 atkEl.style.transform = 'translateX(0) scale(1)';
 }, 150);
+// Target gets hit
+setTimeout(function(){
 tgtEl.style.transition = 'transform 0.1s';
-tgtEl.style.transform = 'translateX(' + (-10*dir) + 'px)';
+tgtEl.style.transform = 'translateX(' + (-15*moveDir) + 'px)';
 setTimeout(function(){
 tgtEl.style.transform = 'translateX(0)';
-}, 200);
-// Floating damage number
+}, 150);
+}, 100);
+// Damage number
 var dmgDiv = document.createElement('div');
-dmgDiv.style.cssText = 'position:absolute;font-size:22px;font-weight:bold;color:#ff4444;text-shadow:2px 2px 4px #000;animation:floatUp 0.8s forwards;pointer-events:none;z-index:50';
+dmgDiv.style.cssText = 'position:absolute;left:50%;top:25%;font-size:24px;font-weight:bold;color:#ff4444;text-shadow:2px 2px 4px #000;animation:floatUp 0.8s forwards;pointer-events:none;z-index:50';
 dmgDiv.textContent = '-' + damage;
-dmgDiv.style.left = '50%';
-dmgDiv.style.top = '30%';
-dmgDiv.style.transform = 'translateX(-50%)';
 document.getElementById('battle_area').appendChild(dmgDiv);
 setTimeout(function(){ dmgDiv.remove(); }, 800);
 }
@@ -373,18 +376,31 @@ if(target.curHp<=0){target.alive=false;addLog(target.name+' 被擊敗!','element
 }
 }
 
+let battleSpeed = 600;
+let battleRunning = false;
+
 function runBattle(){
-battleInterval=setInterval(()=>{
-playerUnits.filter(u=>u.alive).sort((a,b)=>b.spd-a.spd).forEach(u=>doAction(u,true));
-enemyUnits.filter(u=>u.alive).sort((a,b)=>b.spd-a.spd).forEach(u=>doAction(u,false));
+if(battleRunning) return;
+battleRunning = true;
+battleInterval = setInterval(function(){
+if(!battleRunning) return;
+// Get sorted turn order
+let allUnits = [];
+playerUnits.filter(u=>u.alive).forEach(u=>allUnits.push({unit:u, isPlayer:true, spd:u.spd}));
+enemyUnits.filter(u=>u.alive).forEach(u=>allUnits.push({unit:u, isPlayer:false, spd:u.spd}));
+allUnits.sort((a,b)=>b.spd - a.spd);
+allUnits.forEach(function(data){
+if(!data.unit.alive) return;
+doAction(data.unit, data.isPlayer);
 renderBattle();
-document.getElementById('player_count').textContent=playerUnits.filter(u=>u.alive).length;
-document.getElementById('enemy_count').textContent=enemyUnits.filter(u=>u.alive).length;
-const pAlive=playerUnits.filter(u=>u.alive).length;
-const eAlive=enemyUnits.filter(u=>u.alive).length;
-if(eAlive===0){clearInterval(battleInterval);showVictory();}
-if(pAlive===0){clearInterval(battleInterval);showDefeat();}
-},800);
+updateCounters();
+});
+// Check win/lose
+const pAlive = playerUnits.filter(u=>u.alive).length;
+const eAlive = enemyUnits.filter(u=>u.alive).length;
+if(eAlive===0){clearInterval(battleInterval);battleRunning=false;showVictory();return;}
+if(pAlive===0){clearInterval(battleInterval);battleRunning=false;showDefeat();return;}
+}, battleSpeed);
 }
 
 function showVictory(){
