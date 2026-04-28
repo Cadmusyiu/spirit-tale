@@ -299,7 +299,6 @@ document.getElementById('battle_log').innerHTML='';
 }
 
 function animateAttack(unit, target, isPlayer, damage){
-// Find alive arrays
 var pAlive = playerUnits.filter(function(u){return u.alive;});
 var eAlive = enemyUnits.filter(function(u){return u.alive;});
 var atkArr = isPlayer ? pAlive : eAlive;
@@ -308,24 +307,25 @@ var atkIdx = atkArr.indexOf(unit);
 var tgtIdx = tgtArr.indexOf(target);
 var atkSpriteId = isPlayer ? 'psprite' : 'esprite';
 var tgtSpriteId = isPlayer ? 'esprite' : 'psprite';
-console.log('animateAttack:', atkSpriteId+atkIdx, tgtSpriteId+tgtIdx);
 var atkEl = document.getElementById(atkSpriteId + atkIdx);
 var tgtEl = document.getElementById(tgtSpriteId + tgtIdx);
 if(!atkEl) atkEl = document.getElementById('psprite0');
 if(!tgtEl) tgtEl = document.getElementById('esprite0');
-if(!atkEl || !tgtEl){console.log('Sprites not found');return;}
-// Apply attack animation via class
-if(atkEl.classList){
-atkEl.classList.add('attacking');
-setTimeout(function(){ atkEl.classList.remove('attacking'); }, 250);
-}
-// Hit animation
+if(!atkEl || !tgtEl){return;}
+// Simple inline style animation - scale up attacker
+var origScale = atkEl.style.transform || 'scale(1)';
+atkEl.style.transform = 'scale(1.3)';
+atkEl.style.transition = 'transform 0.15s';
 setTimeout(function(){
-if(tgtEl.classList){
-tgtEl.classList.add('hit');
-setTimeout(function(){ tgtEl.classList.remove('hit'); }, 250);
-}
-}, 120);
+atkEl.style.transform = 'scale(1)';
+}, 150);
+// Hit - shake target
+setTimeout(function(){
+var origX = tgtEl.style.transform || 'translateX(0)';
+tgtEl.style.transform = 'translateX(-8px)';
+tgtEl.style.transition = 'transform 0.1s';
+setTimeout(function(){ tgtEl.style.transform = 'translateX(0)'; }, 150);
+}, 100);
 // Damage number
 var dmgDiv = document.createElement('div');
 dmgDiv.className = 'floating-dmg';
@@ -468,13 +468,13 @@ startBattle();
 renderTeamSlots();
 renderSpiritPool();
 
-// Test CSS animation
+// Test animation with inline style
 setTimeout(function(){
 var testEl = document.getElementById('psprite0');
 if(testEl){
-testEl.className = testEl.className + ' attacking';
-setTimeout(function(){ testEl.className = testEl.className.replace(' attacking',''); }, 300);
-console.log('Test animation triggered on psprite0');
+testEl.style.transform = 'scale(1.5)';
+testEl.style.transition = 'transform 0.3s';
+setTimeout(function(){ testEl.style.transform = 'scale(1)'; }, 300);
 }
 }, 1000);
 
