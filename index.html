@@ -14,10 +14,10 @@ body,html{width:100%;max-width:480px;margin:0 auto}
 .btn{padding:10px 20px;background:#4a9eff;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:bold;cursor:pointer;width:100%}
 .btn:active{transform:scale(0.97)}
 .btn:disabled{background:#555;cursor:not-allowed}
-#game_area{width:100%;max-width:480px;flex:1;padding:8px;overflow-y:auto}
+#game_area{width:100%;max-width:480px;min-height:400px;padding:8px;overflow-y:auto}
 .screen{display:none}
 .screen.active{display:block}
-.spirit-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:8px}
+.spirit-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:8px;min-height:200px}
 .spirit-card{background:#222;border:2px solid #333;border-radius:8px;padding:8px;text-align:center;font-size:12px;cursor:pointer}
 .spirit-card:active{transform:scale(0.95)}
 .spirit-card.selected{border-color:#ffcc44;background:#2a2a4a}
@@ -149,7 +149,7 @@ const ELEMENT_ADV = {fire:'earth',earth:'water',water:'fire'};
 
 let game = {gold:0,xp:0,stage:'1-1',unlocked:['1-1','1-2','1-3','Boss']};
 let team = [];
-let playerUnits = [], enemy Spirits = [];
+let playerUnits = [], enemyUnits = [];
 let battleInterval = null;
 let battleLog = [];
 
