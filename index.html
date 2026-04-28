@@ -265,43 +265,52 @@ area.appendChild(vsDiv);
 document.getElementById('battle_log').innerHTML='';
 }
 
-function animateAttack(attackerIdx, targetIdx, isPlayer, damage){
-const atkEl=document.getElementById((isPlayer?'psprite'+attackerIdx:'psprite'+attackerIdx));
-const tgtEl=document.getElementById((isPlayer?'esprite'+targetIdx:'psprite'+targetIdx));
-if(!atkEl||!tgtEl)return;
-atkEl.style.transition='transform 0.15s, box-shadow 0.15s';
-tgtEl.style.transition='transform 0.1s';
+function animateAttack(attacker, target, isPlayer, damage){
+const pAlive=playerUnits.filter(u=>u.alive);
+const eAlive=enemyUnits.filter(u=>u.alive);
+const atkIdx=pAlive.indexOf(attacker);
+const tgtIdx=eAlive.indexOf(target);
+const atkEl=document.getElementById('psprite'+(isPlayer?atkIdx:atkIdx));
+const tgtEl=document.getElementById('esprite'+(isPlayer?tgtIdx:tgtIdx));
+if(!atkEl){console.log('atkEl not found:',atkIdx,isPlayer);return;}
+if(!tgtEl){console.log('tgtEl not found:',tgtIdx,isPlayer);return;}
 if(isPlayer){
-atkEl.style.transform='translateX(40px) scale(1.2)';
-atkEl.style.boxShadow='0 0 30px #ff6622';
-setTimeout(()=>{atkEl.style.transform='translateX(0) scale(1)';atkEl.style.boxShadow='0 0 20px '+atkEl.style.background;},150);
-setTimeout(()=>{tgtEl.style.transform='translateX(-8px)';},50);
-setTimeout(()=>{tgtEl.style.transform='translateX(0)';},200);
-}else{
-atkEl.style.transform='translateX(-40px) scale(1.2)';
-atkEl.style.boxShadow='0 0 30px #ff4444';
+atkEl.style.transition='transform 0.15s';
+atkEl.style.transform='translateX(50px) scale(1.3)';
 setTimeout(()=>{atkEl.style.transform='translateX(0) scale(1)';},150);
-setTimeout(()=>{tgtEl.style.transform='translateX(8px)';},50);
-setTimeout(()=>{tgtEl.style.transform='translateX(0)';},200);
+tgtEl.style.transition='transform 0.1s';
+setTimeout(()=>{tgtEl.style.transform='translateX(-12px) scale(0.9)';},50);
+setTimeout(()=>{tgtEl.style.transform='translateX(0) scale(1)';},200);
+}else{
+atkEl.style.transition='transform 0.15s';
+atkEl.style.transform='translateX(-50px) scale(1.3)';
+setTimeout(()=>{atkEl.style.transform='translateX(0) scale(1)';},150);
+tgtEl.style.transition='transform 0.1s';
+setTimeout(()=>{tgtEl.style.transform='translateX(12px) scale(0.9)';},50);
+setTimeout(()=>{tgtEl.style.transform='translateX(0) scale(1)';},200);
 }
-// Damage number
 const dmgDiv=document.createElement('div');
-dmgDiv.style.cssText='position:absolute;font-size:18px;font-weight:bold;color:#ff4444;text-shadow:2px 2px 3px #000;animation:floatUp 0.8s ease-out forwards;pointer-events:none;z-index:50;font-family:system-ui';
+dmgDiv.style.cssText='position:absolute;font-size:20px;font-weight:bold;color:#ff4444;text-shadow:2px 2px 3px #000;animation:floatUp 0.8s ease-out forwards;pointer-events:none;z-index:50';
 dmgDiv.textContent='-'+damage;
-dmgDiv.style.left=(isPlayer?'55%':'35%');
-dmgDiv.style.top='40%';
+dmgDiv.style.left='50%';
+dmgDiv.style.top='35%';
+dmgDiv.style.transform='translateX(-50%)';
 document.getElementById('battle_area').appendChild(dmgDiv);
 setTimeout(()=>dmgDiv.remove(),800);
 }
 
-function animateHeal(unitIdx, isPlayer, amount){
-const el=document.getElementById((isPlayer?'psprite':'esprite')+unitIdx);
+function animateHeal(target, isPlayer, amount){
+const pAlive=playerUnits.filter(u=>u.alive);
+const eAlive=enemyUnits.filter(u=>u.alive);
+const tIdx=(isPlayer?pAlive:eAlive).indexOf(target);
+const el=document.getElementById((isPlayer?'psprite':'esprite')+tIdx);
 if(!el)return;
 const healDiv=document.createElement('div');
-healDiv.style.cssText='position:absolute;font-size:14px;font-weight:bold;color:#44ff88;text-shadow:1px 1px 2px #000;animation:floatUp 0.8s ease-out forwards;pointer-events:none;z-index:50';
-healDiv.textContent='+'+amount;
-healDiv.style.left=(isPlayer?40:340)+'px';
-healDiv.style.top='200px';
+healDiv.style.cssText='position:absolute;font-size:18px;font-weight:bold;color:#44ff88;text-shadow:2px 2px 3px #000;animation:floatUp 0.8s ease-out forwards;pointer-events:none;z-index:50';
+healDiv.textContent='+'+amount+' HP';
+healDiv.style.left='50%';
+healDiv.style.top='35%';
+healDiv.style.transform='translateX(-50%)';
 document.getElementById('battle_area').appendChild(healDiv);
 setTimeout(()=>healDiv.remove(),800);
 }
@@ -332,15 +341,13 @@ function doAction(unit,isPlayer){
 const allies=isPlayer?playerUnits:enemyUnits;
 const enemies=isPlayer?enemyUnits:playerUnits;
 const healType=['frost_wing','deep_sea'].includes(unit.id);
-const uIdx=(isPlayer?playerUnits:enemyUnits).indexOf(unit);
 if(healType){
 const target=getTarget(allies,'lowestHp');
 if(target && target.curHp<target.maxHp){
 const heal=Math.floor(unit.atk*0.8);
 target.curHp=Math.min(target.maxHp,target.curHp+heal);
 addLog((isPlayer?'我':'敵')+' '+unit.name+' 治療 '+target.name+' +'+heal,'heal');
-const tIdx=(isPlayer?playerUnits:enemyUnits).indexOf(target);
-animateHeal(tIdx,isPlayer,heal);
+animateHeal(target,isPlayer,heal);
 }
 }else{
 const target=getTarget(enemies,'lowestHp');
@@ -349,8 +356,7 @@ let dmg=calcDmg(unit.atk,target.def,ELEMENT_ADV[unit.element]===target.element);
 target.curHp=Math.max(0,target.curHp-dmg);
 const elemStr=ELEMENT_ADV[unit.element]===target.element?' (元素優勢!) ':'';
 addLog((isPlayer?'我':'敵')+' '+unit.name+' 攻擊 '+target.name+' 造成 '+dmg+' 傷害'+elemStr,'atk');
-const tIdx=(isPlayer?enemyUnits:playerUnits).indexOf(target);
-animateAttack(uIdx,tIdx,isPlayer,damage);
+animateAttack(unit,target,isPlayer,damage);
 if(target.curHp<=0){target.alive=false;addLog(target.name+' 被擊敗!','element');}
 }
 }
