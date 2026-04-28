@@ -413,12 +413,19 @@ let allUnits = [];
 playerUnits.filter(u=>u.alive).forEach(u=>allUnits.push({unit:u, isPlayer:true, spd:u.spd}));
 enemyUnits.filter(u=>u.alive).forEach(u=>allUnits.push({unit:u, isPlayer:false, spd:u.spd}));
 allUnits.sort((a,b)=>b.spd - a.spd);
+// Process all actions FIRST, then render once
+var actions = [];
 allUnits.forEach(function(data){
 if(!data.unit.alive) return;
-doAction(data.unit, data.isPlayer);
+actions.push({unit:data.unit, isPlayer:data.isPlayer});
+});
+// Execute all actions (animations will be triggered)
+actions.forEach(function(action){
+doAction(action.unit, action.isPlayer);
+});
+// THEN render once after all actions processed
 renderBattle();
 updateCounters();
-});
 // Check win/lose
 const pAlive = playerUnits.filter(u=>u.alive).length;
 const eAlive = enemyUnits.filter(u=>u.alive).length;
