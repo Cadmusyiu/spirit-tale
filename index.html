@@ -8,479 +8,471 @@
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#0a0a1a;color:#fff;font-family:system-ui,-apple-system,sans-serif;display:flex;flex-direction:column;align-items:center;min-height:100vh;overflow-x:hidden}
 body,html{width:100%;max-width:480px;margin:0 auto}
-#topbar{width:100%;max-width:480px;display:flex;justify-content:space-between;padding:10px 12px;background:#1a1a3a;border-bottom:2px solid #333;font-size:13px}
+#topbar{width:100%;max-width:480px;display:flex;justify-content:space-between;padding:10px 12px;background:#1a1a3a;border-bottom:2px solid #333;font-size:13px;position:sticky;top:0;z-index:10}
 #topbar span{color:#ffcc44}
-.card{background:#1a1a3a;border:1px solid #333;border-radius:8px;padding:8px;margin:4px 0}
 .btn{padding:10px 20px;background:#4a9eff;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:bold;cursor:pointer;width:100%}
 .btn:active{transform:scale(0.97)}
 .btn:disabled{background:#555;cursor:not-allowed}
-#game_area{width:100%;max-width:480px;min-height:400px;padding:8px;overflow-y:auto}
-.screen{display:none}
-.screen.active{display:block}
+.btn-gold{background:#ffaa00;color:#111}
+.btn-red{background:#cc3333}
+#game_area{width:100%;max-width:480px;min-height:460px;padding:8px;overflow-y:auto;flex:1}
+.screen{display:none}.screen.active{display:block}
 .spirit-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:8px;min-height:200px}
-.spirit-card{background:#222;border:2px solid #333;border-radius:8px;padding:8px;text-align:center;font-size:12px;cursor:pointer}
+.spirit-card{background:#222;border:2px solid #333;border-radius:8px;padding:8px;text-align:center;font-size:12px;cursor:pointer;transition:all 0.2s}
 .spirit-card:active{transform:scale(0.95)}
-.spirit-card.selected{border-color:#ffcc44;background:#2a2a4a}
 .spirit-card.assigned{border-color:#44ff44;background:#1a3a1a}
 .spirit-icon{width:50px;height:50px;border-radius:50%;margin:0 auto 6px;display:flex;align-items:center;justify-content:center;font-size:24px}
 .team-slot{background:#1a1a3a;border:2px dashed #444;border-radius:8px;padding:12px;text-align:center;min-height:80px;display:flex;flex-direction:column;align-items:center;justify-content:center}
 .team-slot.filled{border-style:solid;border-color:#4a9eff}
-.team-slot.empty{color:#666}
-#battle_area{position:relative;height:420px;background:linear-gradient(90deg,#0d1a0d 0%,#0d0d20 50%,#1a0d0d 100%);border-radius:8px;overflow:hidden}
-#battle_log{height:100px;background:#111;border-radius:8px;padding:6px;font-size:11px;overflow-y:auto;color:#aaa;margin-top:8px}
-.battle-log-line{margin:2px 0}
+#battle_area{position:relative;height:420px;background:linear-gradient(180deg,#0d1a0d 0%,#0d0d20 50%,#1a0d0d 100%);border-radius:8px;overflow:hidden;border:1px solid #333}
+#battle_log{height:120px;background:#111;border-radius:8px;padding:8px;font-size:11px;overflow-y:auto;color:#aaa;margin-top:8px;border:1px solid #222;line-height:1.6}
+.battle-log-line{margin:1px 0;padding:0 4px}
 .battle-log-line.atk{color:#ff6644}
 .battle-log-line.heal{color:#44ff88}
-.battle-log-line.element{color:#ffcc44}
-.spirit-sprite{position:absolute;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;transition:all 0.3s}
+.battle-log-line.element{color:#ffcc44;font-weight:bold}
+.battle-log-line.info{color:#888}
+.spirit-sprite{position:absolute;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;transition:all 0.15s;z-index:2}
 .spirit-sprite.player{border:2px solid #4a9eff}
 .spirit-sprite.enemy{border:2px solid #ff4444}
-.hp-bar{position:absolute;top:-8px;left:50%;transform:translateX(-50%);width:36px;height:4px;background:#333;border-radius:2px;overflow:hidden}
-.hp-fill{height:100%;background:#44ff44;transition:width 0.3s}
-.dmg-num{position:absolute;font-size:12px;font-weight:bold;color:#ff4444;animation:floatUp 0.8s ease-out}
-@keyframes floatUp{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-30px)}}
-@keyframes slideInLeft{0%{opacity:0;transform:translateX(-50px)}100%{opacity:1;transform:translateX(0)}}
-@keyframes slideInRight{0%{opacity:0;transform:translateX(50px)}100%{opacity:1;transform:translateX(0)}}
-@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
 .stage-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:8px}
-.stage-btn{padding:16px 8px;background:#222;border:2px solid #333;border-radius:8px;text-align:center;font-size:13px;cursor:pointer}
+.stage-btn{padding:16px 8px;background:#222;border:2px solid #333;border-radius:8px;text-align:center;font-size:13px;cursor:pointer;transition:all 0.2s}
 .stage-btn:active{transform:scale(0.95)}
 .stage-btn.unlocked{background:#1a2a1a;border-color:#44ff44;color:#44ff44}
-.stage-btn.locked{background:#222;color:#555;cursor:not-allowed}
-.stage-btn.current{background:#1a1a3a;border-color:#ffcc44}
-.modal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.9);z-index:100;justify-content:center;align-items:center;flex-direction:column;gap:16px}
+.stage-btn.locked{background:#222;color:#555;cursor:not-allowed;opacity:0.5}
+.stage-btn.current{background:#1a1a3a;border-color:#ffcc44;color:#ffcc44;box-shadow:0 0 15px rgba(255,204,68,0.3)}
+.modal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.92);z-index:100;justify-content:center;align-items:center;flex-direction:column;gap:20px;padding:24px}
 .modal.show{display:flex}
-.modal h2{font-size:24px;color:#ffcc44}
-.modal p{font-size:14px;color:#aaa;text-align:center}
-.nav-bar{display:flex;width:100%;max-width:480px;background:#1a1a3a;border-top:2px solid #333}
-.nav-btn{flex:1;padding:10px;border:none;background:#1a1a3a;color:#888;font-size:12px;cursor:pointer}
-.nav-btn.active{color:#ffcc44;background:#2a2a4a}
-.nav-btn:active{background:#333}
-#hp_bars_player,#hp_bars_enemy{position:absolute;width:100%;display:flex;justify-content:space-around;padding:4px}
-#hp_bars_player{top:4px}
-#hp_bars_enemy{bottom:4px}
-.teams-display{display:flex;justify-content:space-between;padding:4px 8px;font-size:11px}
+.modal h2{font-size:28px;color:#ffcc44;text-shadow:0 0 20px rgba(255,204,68,0.5)}
+.modal p{font-size:14px;color:#aaa;text-align:center;line-height:1.8}
+.modal .btn{max-width:240px}
+.nav-bar{display:flex;width:100%;max-width:480px;background:#1a1a3a;border-top:2px solid #333;position:sticky;bottom:0;z-index:10}
+.nav-btn{flex:1;padding:12px 8px;border:none;background:#1a1a3a;color:#888;font-size:12px;cursor:pointer;transition:all 0.2s}
+.nav-btn.active{color:#ffcc44;background:#2a2a4a;border-top:2px solid #ffcc44;margin-top:-2px}
+.teams-display{display:flex;justify-content:space-between;padding:4px 8px;font-size:11px;margin-bottom:4px}
 .teams-display .player{color:#4a9eff}
 .teams-display .enemy{color:#ff4444}
-
-.spirit-sprite{
-transition: all 0.15s ease-out;
-}
-.spirit-sprite.attacking{
-animation: attackPulse 0.2s ease-out;
-}
-.spirit-sprite.hit{
-animation: hitShake 0.2s ease-out;
-}
-@keyframes attackPulse{
-0%{transform: scale(1)}
-50%{transform: scale(1.3)}
-100%{transform: scale(1)}
-}
-@keyframes hitShake{
-0%{transform: translateX(0)}
-25%{transform: translateX(-10px)}
-50%{transform: translateX(10px)}
-75%{transform: translateX(-5px)}
-100%{transform: translateX(0)}
-}
-.floating-dmg{
-position:absolute;left:50%;top:30%;font-size:26px;font-weight:bold;color:#ff4444;text-shadow:2px 2px 4px #000;animation:floatingDmg 0.8s forwards;pointer-events:none;z-index:50;
-}
-@keyframes floatingDmg{
-0%{opacity:1;transform:translate(-50%,0) scale(1.2)}
-100%{opacity:0;transform:translate(-50%,-50px) scale(0.8)}
-}
-
+@keyframes slideInLeft{0%{opacity:0;transform:translateX(-30px)}100%{opacity:1;transform:translateX(0)}}
+@keyframes slideInRight{0%{opacity:0;transform:translateX(30px)}100%{opacity:1;transform:translateX(0)}}
+@keyframes attackPulse{0%{transform:scale(1)}50%{transform:scale(1.4)}100%{transform:scale(1)}}
+@keyframes hitShake{0%{transform:translateX(0)}25%{transform:translateX(-8px)}50%{transform:translateX(8px)}75%{transform:translateX(-4px)}100%{transform:translateX(0)}}
+@keyframes floatingDmg{0%{opacity:1;transform:translate(-50%,0) scale(1.2)}100%{opacity:0;transform:translate(-50%,-40px) scale(0.8)}}
+@keyframes bossGlow{0%,100%{box-shadow:0 0 20px #ff4444}50%{box-shadow:0 0 40px #ff4444,0 0 60px #ff4444}}
+.floating-dmg{position:absolute;left:50%;top:30%;font-size:26px;font-weight:bold;color:#ff4444;text-shadow:2px 2px 4px #000;animation:floatingDmg 0.8s forwards;pointer-events:none;z-index:50}
+.floating-heal{color:#44ff88}.floating-element{color:#ffcc44}
+.spirit-detail{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);z-index:90;display:none;justify-content:center;align-items:center;flex-direction:column;padding:24px}
+.spirit-detail.show{display:flex}
+.spirit-detail .inner{background:#1a1a3a;border:1px solid #444;border-radius:12px;padding:24px;max-width:320px;width:100%;text-align:center}
+.spirit-detail .big-icon{width:80px;height:80px;border-radius:50%;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-size:40px}
+.spirit-detail h3{font-size:20px;color:#ffcc44;margin-bottom:8px}
+.spirit-detail .stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0;font-size:13px}
+.spirit-detail .stats div{background:#222;padding:8px;border-radius:6px}
+.spirit-detail .stats .label{color:#888;font-size:11px}
+.spirit-detail .stats .value{color:#fff;font-size:15px;font-weight:bold}
+.element-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:bold}
+.element-fire{background:#662200;color:#ff6622}
+.element-water{background:#002266;color:#22ccff}
+.element-earth{background:#224400;color:#44cc22}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:#111}
+::-webkit-scrollbar-thumb{background:#333;border-radius:2px}
 </style>
 </head>
 <body>
 <div id="topbar">
 <div>💰 <span id="gold">0</span></div>
 <div>⭐ <span id="xp">0</span></div>
-<div>第 <span id="stage_disp">1-1</span> 關</div>
+<div>📖 第 <span id="stage_disp">1-1</span> 關</div>
 </div>
-
 <div id="game_area">
-<!-- Team Screen -->
 <div id="screen_team" class="screen active">
-<h3 style="font-size:14px;color:#ffcc44;margin:8px 0">編制隊伍 (已選<span id="team_count">0</span>/6)</h3>
-<div id="team_slots" class="spirit-grid" style="margin-bottom:12px"></div>
-<h4 style="font-size:13px;color:#888;margin:8px 0">選擇精靈</h4>
+<div style="display:flex;justify-content:space-between;align-items:center;margin:8px 4px">
+<h3 style="font-size:14px;color:#ffcc44">👥 隊伍編制</h3>
+<span style="font-size:12px;color:#888">已選 <span id="team_count">0</span>/6</span>
+</div>
+<div id="team_slots" class="spirit-grid" style="margin-bottom:4px"></div>
+<h4 style="font-size:12px;color:#888;margin:4px 8px">📋 精靈池（點擊加入）</h4>
 <div id="spirit_pool" class="spirit-grid"></div>
-<div style="margin-top:12px">
-<button class="btn" id="btn_start_battle" onclick="startBattle()" disabled>開始戰鬥 (需要6隻)</button>
+<div style="margin-top:8px">
+<button class="btn" id="btn_start_battle" onclick="startBattle()" disabled>⚔️ 開始戰鬥（需6隻）</button>
 </div>
 </div>
-
-<!-- Battle Screen -->
 <div id="screen_battle" class="screen">
 <div class="teams-display">
-<div class="player">我方: <span id="player_count">0</span>隻</div>
-<div class="enemy">敵方: <span id="enemy_count">0</span>隻</div>
+<div class="player">🟦 我方：<span id="player_count">0</span> 隻</div>
+<div class="enemy">🟥 敵方：<span id="enemy_count">0</span> 隻</div>
 </div>
 <div id="battle_area">
-<div id="hp_bars_player"></div>
-<div id="hp_bars_enemy"></div>
+<div id="battle_center_text" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:18px;color:#555;z-index:1;text-align:center">
+<div style="font-size:40px">⚔️</div>
+<div style="margin-top:8px">準備戰鬥...</div>
+</div>
 </div>
 <div id="battle_log"></div>
 </div>
-
-<!-- Stage Screen -->
 <div id="screen_stage" class="screen">
 <div style="padding:8px">
-<h3 style="color:#ffcc44;margin-bottom:12px">第一章 - 精靈森林</h3>
-<div class="stage-grid">
-<div class="stage-btn unlocked current" onclick="selectStage(1,1)">1-1</div>
-<div class="stage-btn unlocked" onclick="selectStage(1,2)">1-2</div>
-<div class="stage-btn unlocked" onclick="selectStage(1,3)">1-3</div>
-<div class="stage-btn locked" onclick="alert('尚未通關前一關')">Boss</div>
-</div>
-<div style="margin-top:16px">
-<button class="btn" onclick="goTeam()">返回編隊</button>
+<h3 style="color:#ffcc44;margin-bottom:4px;font-size:16px">🌲 第一章 - 精靈森林</h3>
+<p style="color:#888;font-size:11px;margin-bottom:12px">擊倒所有敵方精靈，收集 XP 和金幣！</p>
+<div class="stage-grid" id="stage_grid"></div>
+<div style="margin-top:16px;padding:12px;background:#1a1a3a;border-radius:8px;border:1px solid #333">
+<div style="font-size:12px;color:#888;margin-bottom:8px">📊 關卡資訊</div>
+<div id="stage_info" style="font-size:13px;color:#aaa;line-height:1.8">選擇關卡查看資訊</div>
 </div>
 </div>
 </div>
 </div>
-
+<div id="spirit_detail" class="spirit-detail">
+<div class="inner" id="spirit_detail_inner"></div>
+</div>
 <div id="modal_victory" class="modal">
-<h2>🎉 勝利!</h2>
-<p id="rewards_text">獲得 XP: 0 | Gold: 0</p>
-<button class="btn" onclick="nextStage()">下一關</button>
+<h2>🎉 勝利！</h2>
+<div style="font-size:48px">🏆</div>
+<p id="rewards_text">獲得 XP：0 | Gold：0</p>
+<p id="level_up_text" style="color:#44ff88;display:none">⬆️ 等級提升！</p>
+<button class="btn btn-gold" onclick="nextStage()">➡️ 下一關</button>
+<button class="btn" onclick="closeModal('modal_victory');goTeam()">🏠 返回編隊</button>
 </div>
-
 <div id="modal_defeat" class="modal">
 <h2>💀 戰敗</h2>
-<p>敵人太強了，再試一次！</p>
-<button class="btn" onclick="retryStage()">重試</button>
+<p>敵人太強了，調整隊伍再試一次！</p>
+<button class="btn btn-red" onclick="retryStage()">🔄 重試</button>
+<button class="btn" onclick="closeModal('modal_defeat');goTeam()">🏠 返回編隊</button>
 </div>
-
 <div class="nav-bar">
-<button class="nav-btn active" onclick="switchScreen('team')">編隊</button>
-<button class="nav-btn" onclick="switchScreen('stage')">關卡</button>
-<button class="nav-btn" onclick="switchScreen('team')">寵物</button>
+<button class="nav-btn active" onclick="switchScreen('team',this)">👥 編隊</button>
+<button class="nav-btn" onclick="switchScreen('stage',this)">🗺️ 關卡</button>
 </div>
-
 <script>
-const SPIRITS = {
-flame_wing:{id:'flame_wing',name:'炎翼精靈',element:'fire',atk:25,spd:18,hp:100,def:5,color:'#ff6622',skill:'火焰彈',passive:'怒火',icon:'🔥'},
-lava_spirit:{id:'lava_spirit',name:'熔岩精靈',element:'fire',atk:20,spd:10,hp:140,def:12,color:'#cc3300',skill:'熔岩打擊',passive:'熔甲',icon:'🌋'},
-frost_wing:{id:'frost_wing',name:'霜翼精靈',element:'water',atk:12,spd:15,hp:90,def:8,color:'#22ccff',skill:'寒冰治療',passive:'護盾',icon:'💧'},
-deep_sea:{id:'deep_sea',name:'深海精靈',element:'water',atk:8,spd:12,hp:110,def:10,color:'#0055cc',skill:'洪流',passive:'深流',icon:'🌊'},
-grass_speaker:{id:'grass_speaker',name:'草語精靈',element:'earth',atk:18,spd:14,hp:105,def:10,color:'#44cc22',skill:'藤蔓打擊',passive:'根固',icon:'🌿'},
-stone_armor:{id:'stone_armor',name:'岩甲精靈',element:'earth',atk:10,spd:8,hp:130,def:18,color:'#886633',skill:'岩石壁壘',passive:'石化',icon:'🪨'}
+var SPIRITS={
+flame_wing:{id:"flame_wing",name:"炎翼精靈",element:"fire",atk:25,spd:18,hp:100,def:5,color:"#ff6622",skill:"火焰彈",passive:"怒火",icon:"🔥"},
+lava_spirit:{id:"lava_spirit",name:"熔岩精靈",element:"fire",atk:20,spd:10,hp:140,def:12,color:"#cc3300",skill:"熔岩打擊",passive:"熔甲",icon:"🌋"},
+frost_wing:{id:"frost_wing",name:"霜翼精靈",element:"water",atk:12,spd:15,hp:90,def:8,color:"#22ccff",skill:"寒冰治療",passive:"護盾",icon:"💧"},
+deep_sea:{id:"deep_sea",name:"深海精靈",element:"water",atk:8,spd:12,hp:110,def:10,color:"#0055cc",skill:"洪流",passive:"深流",icon:"🌊"},
+grass_speaker:{id:"grass_speaker",name:"草語精靈",element:"earth",atk:18,spd:14,hp:105,def:10,color:"#44cc22",skill:"藤蔓打擊",passive:"根固",icon:"🌿"},
+stone_armor:{id:"stone_armor",name:"岩甲精靈",element:"earth",atk:10,spd:8,hp:130,def:18,color:"#886633",skill:"岩石壁垒",passive:"石化",icon:"🪨"},
 };
-
-const STAGES = {
-'1-1':{enemies:['flame_wing','frost_wing','grass_speaker'],xp:50,gold:20},
-'1-2':{enemies:['flame_wing','frost_wing','grass_speaker','lava_spirit'],xp:80,gold:35},
-'1-3':{enemies:['flame_wing','frost_wing','grass_speaker','lava_spirit','deep_sea'],xp:120,gold:50},
-'Boss':{enemies:['flame_wing','lava_spirit','frost_wing','deep_sea','grass_speaker','stone_armor'],xp:300,gold:150}
+var ELEMENT_ADV={fire:"earth",earth:"water",water:"fire"};
+var ELEMENT_NAMES={fire:"🔥 火",earth:"🌍 地",water:"💧 水"};
+var STAGES_ORDER=["1-1","1-2","1-3","Boss"];
+var STAGES={
+"1-1":{chapter:1,stage:1,label:"1-1",enemies:["flame_wing","frost_wing","grass_speaker"],xp:50,gold:20,desc:"3 隻野生精靈"},
+"1-2":{chapter:1,stage:2,label:"1-2",enemies:["flame_wing","frost_wing","grass_speaker","lava_spirit"],xp:80,gold:35,desc:"4 隻強化精靈"},
+"1-3":{chapter:1,stage:3,label:"1-3",enemies:["flame_wing","frost_wing","grass_speaker","lava_spirit","deep_sea"],xp:120,gold:50,desc:"5 隻精英精靈"},
+"Boss":{chapter:1,stage:4,label:"Boss",enemies:["flame_wing","lava_spirit","frost_wing","deep_sea","grass_speaker","stone_armor"],xp:300,gold:150,desc:"⚡ BOSS 戰 - 全員出擊"},
 };
+var game={gold:0,xp:0,stage:"1-1",unlockedStages:["1-1"],completedStages:[],spiritLevels:{}};
+var team=[null,null,null,null,null,null];
+var playerUnits=[],enemyUnits=[];
+var battleTimer=null,battleRunning=false;
+var battleSpeed=500;
+var battleLog=[];
 
-const ELEMENT_ADV = {fire:'earth',earth:'water',water:'fire'};
+function rand(mn,mx){return Math.floor(Math.random()*(mx-mn+1))+mn;}
+function getLevel(id){return game.spiritLevels[id]||1;}
+function getScaled(baseId,lvl){var s=SPIRITS[baseId];var sc=1+(lvl-1)*0.05;return{atk:Math.floor(s.atk*sc),def:Math.floor(s.def*sc),hp:Math.floor(s.hp*sc)};}
+function closeModal(id){document.getElementById(id).classList.remove("show");}
 
-let game = {gold:0,xp:0,stage:'1-1',unlocked:['1-1','1-2','1-3','Boss']};
-let team = [];
-let playerUnits = [], enemyUnits = [];
-let battleInterval = null;
-let battleLog = [];
-
-function switchScreen(s){
-document.querySelectorAll('.screen').forEach(e=>e.classList.remove('active'));
-document.getElementById('screen_'+s).classList.add('active');
-document.querySelectorAll('.nav-btn').forEach(e=>e.classList.remove('active'));
-event.target.classList.add('active');
+function switchScreen(name,btnEl){
+  document.querySelectorAll(".screen").forEach(function(e){e.classList.remove("active");});
+  document.getElementById("screen_"+name).classList.add("active");
+  document.querySelectorAll(".nav-btn").forEach(function(e){e.classList.remove("active");});
+  if(btnEl)btnEl.classList.add("active");
+}
+function goTeam(){
+  document.querySelectorAll(".screen").forEach(function(e){e.classList.remove("active");});
+  document.getElementById("screen_team").classList.add("active");
+  document.querySelectorAll(".nav-btn").forEach(function(e){e.classList.remove("active");});
+  document.querySelectorAll(".nav-btn")[0].classList.add("active");
+}
+function goBattle(){
+  document.querySelectorAll(".screen").forEach(function(e){e.classList.remove("active");});
+  document.getElementById("screen_battle").classList.add("active");
 }
 
-function goTeam(){switchScreen('team')}
-function goBattle(){switchScreen('battle')}
+function renderStages(){
+  var grid=document.getElementById("stage_grid");grid.innerHTML="";
+  STAGES_ORDER.forEach(function(sid){
+    var s=STAGES[sid];
+    var unlocked=game.unlockedStages.includes(sid);
+    var completed=game.completedStages.includes(sid);
+    var current=game.stage===sid;
+    var btn=document.createElement("div");
+    btn.className="stage-btn"+(unlocked?" unlocked":" locked")+(current?" current":"");
+    btn.innerHTML="<div style='font-weight:bold'>"+s.label+"</div><div style='font-size:10px;margin-top:4px'>"+s.desc+"</div>"+(completed?"<div style='font-size:14px;margin-top:4px'>⭐</div>":"");
+    if(unlocked)btn.onclick=function(){selectStage(sid);};
+    else btn.onclick=function(){alert("🔒 尚未解鎖");};
+    grid.appendChild(btn);
+  });
+  showStageInfo(game.stage);
+}
+function showStageInfo(sid){
+  var s=STAGES[sid];if(!s)return;
+  var enemies=s.enemies.map(function(e){return SPIRITS[e].name;}).join("、");
+  document.getElementById("stage_info").innerHTML="📌 關卡："+s.label+"<br>👾 敵人："+enemies+"<br>⭐ 經驗值："+s.xp+" XP<br>💰 金幣："+s.gold+" Gold<br>"+(game.completedStages.includes(sid)?"✅ 已通關":game.unlockedStages.includes(sid)?"🔓 已解鎖":"🔒 尚未解鎖");
+}
+function selectStage(sid){game.stage=sid;document.getElementById("stage_disp").textContent=sid;renderStages();}
+function unlockNextStage(prev){
+  var idx=STAGES_ORDER.indexOf(prev);
+  if(idx>=0&&idx<STAGES_ORDER.length-1){var next=STAGES_ORDER[idx+1];if(!game.unlockedStages.includes(next))game.unlockedStages.push(next);}
+}
 
-function renderTeamSlots(){
-const container = document.getElementById('team_slots');
-container.innerHTML = '';
-for(let i=0;i<6;i++){
-const slot = document.createElement('div');
-slot.className = 'spirit-card team-slot ' + (team[i]?'filled':'empty');
-if(team[i]){
-const s = SPIRITS[team[i]];
-slot.innerHTML = '<div class="spirit-icon" style="background:'+s.color+'">'+s.icon+'</div><div style="font-size:11px">'+s.name+'</div>';
-slot.onclick = ()=>removeFromTeam(i);
-}else{
-slot.innerHTML = '<div style="font-size:20px;color:#444">+</div><div style="font-size:10px;color:#555">空位</div>';
+function renderTeam(){
+  var c=document.getElementById("team_slots");c.innerHTML="";
+  for(var i=0;i<6;i++){
+    var slot=document.createElement("div");
+    if(team[i]){
+      var s=SPIRITS[team[i]];var lvl=getLevel(team[i]);
+      slot.className="spirit-card team-slot filled";
+      slot.innerHTML="<div class='spirit-icon' style='background:"+s.color+";box-shadow:0 0 15px "+s.color+"60'>"+s.icon+"</div><div style='font-size:11px;font-weight:bold'>"+s.name+"</div><div style='font-size:10px;color:#888'>Lv."+lvl+"</div><div style='font-size:10px;color:#aaa'>⚔️"+s.atk+" ❤️"+s.hp+"</div>";
+    }else{
+      slot.className="spirit-card team-slot empty";
+      slot.innerHTML="<div style='font-size:24px;color:#444'>＋</div><div style='font-size:10px;color:#555'>空位</div>";
+    }
+    c.appendChild(slot);
+  }
+  document.getElementById("team_count").textContent=team.filter(Boolean).length;
+  document.getElementById("btn_start_battle").disabled=team.filter(Boolean).length<6;
 }
-container.appendChild(slot);
-}
-document.getElementById('team_count').textContent = team.filter(Boolean).length;
-document.getElementById('btn_start_battle').disabled = team.filter(Boolean).length < 6;
-}
-
 function renderSpiritPool(){
-const container = document.getElementById('spirit_pool');
-container.innerHTML = '';
-Object.values(SPIRITS).forEach(s=>{
-const inTeam = team.includes(s.id);
-const card = document.createElement('div');
-card.className = 'spirit-card ' + (inTeam?'assigned':'');
-card.innerHTML = '<div class="spirit-icon" style="background:'+s.color+'">'+s.icon+'</div><div style="font-size:11px">'+s.name+'</div><div style="font-size:10px;color:#888">'+s.element+' '+s.atk+'攻 '+s.hp+'血</div>';
-if(!inTeam) card.onclick = ()=>addToTeam(s.id);
-card.style.pointerEvents = inTeam?'none':'auto';
-container.appendChild(card);
-});
+  var c=document.getElementById("spirit_pool");c.innerHTML="";
+  Object.values(SPIRITS).forEach(function(s){
+    var inTeam=team.includes(s.id);
+    var lvl=getLevel(s.id);
+    var card=document.createElement("div");
+    card.className="spirit-card"+(inTeam?" assigned":"");
+    card.innerHTML="<div class='spirit-icon' style='background:"+s.color+";box-shadow:0 0 10px "+s.color+"40'>"+s.icon+"</div><div style='font-size:11px;font-weight:bold'>"+s.name+"</div><div style='font-size:10px;color:#888'>Lv."+lvl+"</div><div style='font-size:10px;color:#888'>⚔️"+s.atk+" ❤️"+s.hp+" 🛡️"+s.def+"</div><div><span class='element-badge element-"+s.element+"'>"+ELEMENT_NAMES[s.element]+"</span></div>";
+    if(!inTeam)card.onclick=function(){addToTeam(s.id);};
+    else{card.style.cursor="default";card.title="已在隊伍中";}
+    c.appendChild(card);
+  });
 }
+function addToTeam(id){for(var i=0;i<6;i++){if(!team[i]){team[i]=id;renderTeam();renderSpiritPool();return;}}alert("隊伍已滿！");}
 
-function addToTeam(id){
-if(team.filter(Boolean).length >= 6) return;
-for(let i=0;i<6;i++){if(!team[i]){team[i]=id;break}}
-renderTeamSlots();renderSpiritPool();
+function openSpiritDetail(id){
+  var s=SPIRITS[id];if(!s)return;
+  var lvl=getLevel(id);var stats=getScaled(id,lvl);
+  var inner=document.getElementById("spirit_detail_inner");
+  inner.innerHTML="<div class='big-icon' style='background:"+s.color+";box-shadow:0 0 30px "+s.color+"80'>"+s.icon+"</div><h3>"+s.name+"</h3><div style='margin-bottom:8px'><span class='element-badge element-"+s.element+"'>"+ELEMENT_NAMES[s.element]+"</span> <span style='color:#888;font-size:12px'>Lv."+lvl+"</span></div><div class='stats'><div><div class='label'>⚔️ 攻擊力</div><div class='value'>"+stats.atk+"</div></div><div><div class='label'>❤️ 生命值</div><div class='value'>"+stats.hp+"</div></div><div><div class='label'>🛡️ 防禦力</div><div class='value'>"+stats.def+"</div></div><div><div class='label'>💨 速度</div><div class='value'>"+s.spd+"</div></div></div><div style='font-size:12px;color:#aaa;margin:12px 0;line-height:1.8'><div>🎯 技能：<strong style='color:#ffcc44'>"+s.skill+"</strong></div><div>✨ 被動：<strong style='color:#88ff88'>"+s.passive+"</strong></div></div><button class='btn' onclick='closeSpiritDetail()'>關閉</button>";
+  document.getElementById("spirit_detail").classList.add("show");
 }
-
-function removeFromTeam(idx){team[idx]=null;renderTeamSlots();renderSpiritPool();}
-
-function selectStage(s){
-game.stage=s;
-document.getElementById('stage_disp').textContent=s;
-document.querySelectorAll('.stage-btn').forEach(b=>b.classList.remove('current'));
-event.target.classList.add('current');
-goTeam();
-}
-
+function closeSpiritDetail(){document.getElementById("spirit_detail").classList.remove("show");}
 function startBattle(){
-if(team.filter(Boolean).length<6)return;
-playerUnits=team.map(id=>{
-const s=SPIRITS[id];
-return{...s, maxHp:s.hp, curHp:s.hp, alive:true, level:1};
-});
-const stageData=STAGES[game.stage];
-enemyUnits=stageData.enemies.map(eid=>{
-const s=SPIRITS[eid];
-return{...s, maxHp:s.hp, curHp:s.hp, alive:true, level:1};
-});
-function updateCounters(){
-document.getElementById('player_count').textContent=playerUnits.filter(u=>u.alive).length;
-document.getElementById('enemy_count').textContent=enemyUnits.filter(u=>u.alive).length;
-}
-renderBattle();
-battleLog=[];
-goBattle();
-setTimeout(runBattle,500);
-}
-
-function renderBattle(){
-console.log('Rendering battle, playerUnits:', playerUnits.length, 'enemyUnits:', enemyUnits.length);
-const area=document.getElementById('battle_area');
-area.innerHTML='<div id="player_spirits" style="position:absolute;left:15px;top:10px;display:flex;flex-direction:column;gap:8px"></div><div id="enemy_spirits" style="position:absolute;right:15px;top:10px;display:flex;flex-direction:column;gap:8px"></div>';
-const pArea=document.getElementById('player_spirits');
-const eArea=document.getElementById('enemy_spirits');
-const pAlive=playerUnits.filter(u=>u.alive);
-const eAlive=enemyUnits.filter(u=>u.alive);
-pAlive.forEach((u,i)=>{
-const div=document.createElement('div');
-div.id='punit'+i;
-div.style.cssText='display:flex;flex-direction:column;align-items:center;animation:slideInLeft 0.3s ease-out';
-const hpPct=Math.max(0,(u.curHp/u.maxHp*100));
-div.innerHTML='<div id="psprite'+i+'" class="spirit-sprite player" style="background:'+u.color+';box-shadow:0 0 20px '+u.color+'80">'+u.icon+'</div><div style="width:44px;height:5px;background:#333;border-radius:3px;margin-top:3px"><div id="phpbar'+i+'" style="height:100%;background:'+(hpPct>50?'#44ff44':hpPct>25?'#ffcc44':'#ff4444')+';width:'+hpPct+'%;transition:width 0.3s"></div></div>';
-pArea.appendChild(div);
-});
-eAlive.forEach((u,i)=>{
-const div=document.createElement('div');
-div.id='eunit'+i;
-div.style.cssText='display:flex;flex-direction:column;align-items:center;animation:slideInRight 0.3s ease-out';
-const hpPct=Math.max(0,(u.curHp/u.maxHp*100));
-div.innerHTML='<div id="esprite'+i+'" class="spirit-sprite enemy" style="background:'+u.color+';box-shadow:0 0 20px '+u.color+'80">'+u.icon+'</div><div style="width:44px;height:5px;background:#333;border-radius:3px;margin-top:3px"><div id="ehpbar'+i+'" style="height:100%;background:'+(hpPct>50?'#44ff44':hpPct>25?'#ffcc44':'#ff4444')+';width:'+hpPct+'%;transition:width 0.3s"></div></div>';
-eArea.appendChild(div);
-});
-// Center VS label
-const vsDiv=document.createElement('div');
-vsDiv.style.cssText='position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:28px;font-weight:bold;color:#333;pointer-events:none;z-index:1';
-vsDiv.textContent='⚔';
-area.appendChild(vsDiv);
-document.getElementById('battle_log').innerHTML='';
+  var valid=team.filter(Boolean);
+  if(valid.length<6)return;
+  closeModal("modal_victory");closeModal("modal_defeat");
+  playerUnits=valid.map(function(id){
+    var s=SPIRITS[id];var lvl=getLevel(id);var stats=getScaled(id,lvl);
+    return{id:s.id,name:s.name,element:s.element,color:s.color,icon:s.icon,skill:s.skill,passive:s.passive,spd:s.spd,atk:stats.atk,def:stats.def,maxHp:stats.hp,curHp:stats.hp,alive:true,level:lvl};
+  });
+  var st=STAGES[game.stage];
+  var isBoss=game.stage==="Boss";
+  enemyUnits=st.enemies.map(function(eid){
+    var s=SPIRITS[eid];var lvl=isBoss?3:1;var stats=getScaled(eid,lvl);
+    return{id:s.id,name:s.name,element:s.element,color:s.color,icon:s.icon,skill:s.skill,passive:s.passive,spd:s.spd+rand(0,2),atk:stats.atk,def:stats.def,maxHp:stats.hp,curHp:stats.hp,alive:true,level:lvl,isBoss:isBoss};
+  });
+  battleLog=[];document.getElementById("battle_log").innerHTML="";
+  document.getElementById("player_count").textContent="6";
+  document.getElementById("enemy_count").textContent=enemyUnits.length;
+  renderBattleField();
+  goBattle();
+  addLog("⚔️ 戰鬥開始！"+st.desc,"info");
+  if(isBoss)addLog("👑 BOSS 戰！","element");
+  battleRunning=true;
+  setTimeout(function(){runBattleLoop();},600);
 }
 
-function animateAttack(unit, target, isPlayer, damage){
-var pAlive = playerUnits.filter(function(u){return u.alive;});
-var eAlive = enemyUnits.filter(function(u){return u.alive;});
-var atkArr = isPlayer ? pAlive : eAlive;
-var tgtArr = isPlayer ? eAlive : pAlive;
-var atkIdx = atkArr.indexOf(unit);
-var tgtIdx = tgtArr.indexOf(target);
-var atkSpriteId = isPlayer ? 'psprite' : 'esprite';
-var tgtSpriteId = isPlayer ? 'esprite' : 'psprite';
-var atkEl = document.getElementById(atkSpriteId + atkIdx);
-var tgtEl = document.getElementById(tgtSpriteId + tgtIdx);
-if(!atkEl) atkEl = document.getElementById('psprite0');
-if(!tgtEl) tgtEl = document.getElementById('esprite0');
-if(!atkEl || !tgtEl){return;}
-// Simple inline style animation - scale up attacker
-var origScale = atkEl.style.transform || 'scale(1)';
-atkEl.style.transform = 'scale(1.3)';
-atkEl.style.transition = 'transform 0.15s';
-setTimeout(function(){
-atkEl.style.transform = 'scale(1)';
-}, 150);
-// Hit - shake target
-setTimeout(function(){
-var origX = tgtEl.style.transform || 'translateX(0)';
-tgtEl.style.transform = 'translateX(-8px)';
-tgtEl.style.transition = 'transform 0.1s';
-setTimeout(function(){ tgtEl.style.transform = 'translateX(0)'; }, 150);
-}, 100);
-// Damage number
-var dmgDiv = document.createElement('div');
-dmgDiv.className = 'floating-dmg';
-dmgDiv.textContent = '-' + damage;
-document.getElementById('battle_area').appendChild(dmgDiv);
-setTimeout(function(){ if(dmgDiv.parentNode) dmgDiv.remove(); }, 800);
+function renderBattleField(){
+  var area=document.getElementById("battle_area");
+  area.innerHTML="";
+  var vs=document.createElement("div");
+  vs.style.cssText="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:32px;color:#333;pointer-events:none;z-index:1";
+  vs.textContent="⚔️";
+  area.appendChild(vs);
+  var p=playerUnits.filter(function(u){return u.alive;});
+  var e=enemyUnits.filter(function(u){return u.alive;});
+  var topY=15;
+  p.forEach(function(u,i){
+    var d=document.createElement("div");
+    d.className="spirit-sprite player";
+    d.style.cssText="left:12px;top:"+(topY+i*60)+"px;background:"+u.color+";box-shadow:0 0 15px "+u.color+"60";
+    d.innerHTML=u.icon;d.id="psp_"+i;
+    var ho=document.createElement("div");
+    ho.style.cssText="position:absolute;top:-8px;left:50%;transform:translateX(-50%);width:44px;height:5px;background:#333;border-radius:3px;overflow:hidden";
+    var hf=document.createElement("div");
+    hf.style.cssText="height:100%;background:#44ff44;width:100%;border-radius:3px;transition:width 0.3s";
+    hf.id="php_"+i;ho.appendChild(hf);d.appendChild(ho);
+    area.appendChild(d);
+  });
+  e.forEach(function(u,i){
+    var d=document.createElement("div");
+    d.className="spirit-sprite enemy";
+    var boss="";
+    if(u.isBoss){boss=";width:46px;height:46px;font-size:24px;border-color:#ff4444;border-width:3px;animation:bossGlow 2s infinite";}
+    d.style.cssText="right:12px;top:"+(topY+i*60)+"px;background:"+u.color+";box-shadow:0 0 15px "+u.color+"60"+boss;
+    d.innerHTML=u.icon;d.id="esp_"+i;
+    var ho=document.createElement("div");
+    ho.style.cssText="position:absolute;top:-8px;left:50%;transform:translateX(-50%);width:44px;height:5px;background:#333;border-radius:3px;overflow:hidden";
+    var hf=document.createElement("div");
+    hf.style.cssText="height:100%;background:#ff4444;width:100%;border-radius:3px;transition:width 0.3s";
+    hf.id="ehp_"+i;ho.appendChild(hf);d.appendChild(ho);
+    area.appendChild(d);
+  });
 }
 
-function animateHeal(target, isPlayer, amount){
-var pAlive = playerUnits.filter(function(u){return u.alive;});
-var eAlive = enemyUnits.filter(function(u){return u.alive;});
-var arr = isPlayer ? pAlive : eAlive;
-var tIdx = arr.indexOf(target);
-var spriteId = isPlayer ? 'psprite' : 'esprite';
-var el = document.getElementById(spriteId + tIdx);
-if(!el) el = document.getElementById('psprite0');
-if(!el) return;
-// Glow effect for healing
-el.style.boxShadow = '0 0 25px #44ff88';
-setTimeout(function(){ el.style.boxShadow = ''; }, 300);
-// Show heal number
-var healDiv = document.createElement('div');
-healDiv.className = 'floating-dmg';
-healDiv.style.color = '#44ff88';
-healDiv.textContent = '+' + amount + ' HP';
-document.getElementById('battle_area').appendChild(healDiv);
-setTimeout(function(){ if(healDiv.parentNode) healDiv.parentNode.removeChild(healDiv); }, 800);
+function updateHPBars(){
+  var p=playerUnits.filter(function(u){return u.alive;});
+  p.forEach(function(u,i){
+    var pct=Math.max(0,(u.curHp/u.maxHp*100));
+    var bar=document.getElementById("php_"+i);
+    if(bar){bar.style.width=pct+"%";bar.style.background=pct>50?"#44ff44":pct>25?"#ffcc44":"#ff4444";}
+  });
+  var e=enemyUnits.filter(function(u){return u.alive;});
+  e.forEach(function(u,i){
+    var pct=Math.max(0,(u.curHp/u.maxHp*100));
+    var bar=document.getElementById("ehp_"+i);
+    if(bar){bar.style.width=pct+"%";bar.style.background=pct>50?"#44ff44":pct>25?"#ffcc44":"#ff4444";}
+  });
+  document.getElementById("player_count").textContent=playerUnits.filter(function(u){return u.alive;}).length;
+  document.getElementById("enemy_count").textContent=enemyUnits.filter(function(u){return u.alive;}).length;
 }
 
-function addLog(msg,type=''){
-battleLog.push({msg,type});
-const log=document.getElementById('battle_log');
-const line=document.createElement('div');
-line.className='battle-log-line '+type;
-line.textContent=msg;
-log.appendChild(line);
-log.scrollTop=log.scrollHeight;
+function addLog(msg,tp){
+  var log=document.getElementById("battle_log");
+  var line=document.createElement("div");
+  line.className="battle-log-line "+(tp||"");
+  line.textContent=msg;
+  log.appendChild(line);
+  log.scrollTop=log.scrollHeight;
 }
-
-function calcDmg(atk,def,elemAdv){
-const base=Math.max(5,atk*1.5-def*0.3);
-return Math.floor(base*(elemAdv?1.5:1));
+function calcDmg(atk,def,adv){
+  return Math.floor(Math.max(5,atk*1.5-def*0.3)*(adv?1.5:1));
 }
-
-function getTarget(units,prefer='lowestHp'){
-const alive=units.filter(u=>u.alive);
-if(!alive.length)return null;
-if(prefer==='lowestHp')return alive.reduce((a,b)=>a.curHp<a.curHp?a:b);
-return alive[Math.floor(Math.random()*alive.length)];
+function getHealTarget(units){
+  var alive=units.filter(function(u){return u.alive;});
+  if(!alive.length)return null;
+  var lowest=alive.reduce(function(a,b){return a.curHp<b.curHp?a:b;});
+  return lowest.curHp>=lowest.maxHp?null:lowest;
+}
+function getAtkTarget(units){
+  var alive=units.filter(function(u){return u.alive;});
+  if(!alive.length)return null;
+  return alive.reduce(function(a,b){return a.curHp<b.curHp?a:b;});
+}
+function flashSprite(el){
+  if(!el)return;
+  el.style.transform="scale(1.35)";
+  el.style.transition="transform 0.1s";
+  setTimeout(function(){el.style.transform="scale(1)";},150);
+}
+function shakeSprite(el){
+  if(!el)return;
+  el.style.transform="translateX(-6px)";
+  el.style.transition="transform 0.08s";
+  setTimeout(function(){el.style.transform="translateX(6px)";},80);
+  setTimeout(function(){el.style.transform="translateX(-3px)";},160);
+  setTimeout(function(){el.style.transform="translateX(0)";},220);
+}
+function showFloatDmg(amount,isHeal,isElement){
+  var d=document.createElement("div");
+  d.className="floating-dmg"+(isHeal?" floating-heal":"")+(isElement?" floating-element":"");
+  d.textContent=(isHeal?"+":"")+amount+(isHeal?" HP":"");
+  document.getElementById("battle_area").appendChild(d);
+  setTimeout(function(){if(d.parentNode)d.remove();},800);
 }
 
 function doAction(unit,isPlayer){
-console.log('doAction:', unit.name, isPlayer?'player':'enemy');
-const allies=isPlayer?playerUnits:enemyUnits;
-const enemies=isPlayer?enemyUnits:playerUnits;
-const healType=['frost_wing','deep_sea'].includes(unit.id);
-if(healType){
-const target=getTarget(allies,'lowestHp');
-if(target && target.curHp<target.maxHp){
-const heal=Math.floor(unit.atk*0.8);
-target.curHp=Math.min(target.maxHp,target.curHp+heal);
-addLog((isPlayer?'我':'敵')+' '+unit.name+' 治療 '+target.name+' +'+heal,'heal');
-animateHeal(target,isPlayer,heal);
-}
-}else{
-const target=getTarget(enemies,'lowestHp');
-if(target){
-let dmg=calcDmg(unit.atk,target.def,ELEMENT_ADV[unit.element]===target.element);
-target.curHp=Math.max(0,target.curHp-dmg);
-const elemStr=ELEMENT_ADV[unit.element]===target.element?' (元素優勢!) ':'';
-addLog((isPlayer?'我':'敵')+' '+unit.name+' 攻擊 '+target.name+' 造成 '+dmg+' 傷害'+elemStr,'atk');
-animateAttack(unit,target,isPlayer,damage);
-if(target.curHp<=0){target.alive=false;addLog(target.name+' 被擊敗!','element');}
-}
-}
+  var allies=isPlayer?playerUnits:enemyUnits;
+  var enemies=isPlayer?enemyUnits:playerUnits;
+  var isHealer=(unit.id==="frost_wing"||unit.id==="deep_sea");
+  if(isHealer){
+    var target=getHealTarget(allies);
+    if(target){
+      var heal=Math.floor(unit.atk*0.8);
+      target.curHp=Math.min(target.maxHp,target.curHp+heal);
+      addLog((isPlayer?"🟦 我":"🟥 敵")+" "+unit.name+" 治療 "+target.name+" +"+heal+" HP","heal");
+      var arr=allies.filter(function(u){return u.alive;});
+      var idx=arr.indexOf(target);
+      var el=document.getElementById((isPlayer?"psp_":"esp_")+idx);
+      flashSprite(el);
+      showFloatDmg(heal,true,false);
+    }
+  }else{
+    var target=getAtkTarget(enemies);
+    if(target){
+      var advantage=ELEMENT_ADV[unit.element]===target.element;
+      var dmg=calcDmg(unit.atk,target.def,advantage);
+      target.curHp=Math.max(0,target.curHp-dmg);
+      addLog((isPlayer?"🟦 我":"🟥 敵")+" "+unit.name+" 攻擊 "+target.name+" 造成 "+dmg+" 傷害"+(advantage?" (🔥元素優势!)":""),"atk"+(advantage?" element":""));
+      var arr=enemies.filter(function(u){return u.alive;});
+      var idx=arr.indexOf(target);
+      var el=document.getElementById((isPlayer?"esp_":"psp_")+idx);
+      var atkEl=document.getElementById((isPlayer?"psp_":"esp_")+arr.indexOf(unit));
+      flashSprite(atkEl);
+      shakeSprite(el);
+      showFloatDmg(dmg,false,advantage);
+      if(target.curHp<=0){target.alive=false;addLog(target.name+" 被擊敗!","element");}
+    }
+  }
 }
 
-let battleSpeed = 600;
-let battleRunning = false;
-
-function runBattle(){
-if(battleRunning) return;
-battleRunning = true;
-battleInterval = setInterval(function(){
-if(!battleRunning) return;
-// Get sorted turn order
-let allUnits = [];
-playerUnits.filter(u=>u.alive).forEach(u=>allUnits.push({unit:u, isPlayer:true, spd:u.spd}));
-enemyUnits.filter(u=>u.alive).forEach(u=>allUnits.push({unit:u, isPlayer:false, spd:u.spd}));
-allUnits.sort((a,b)=>b.spd - a.spd);
-// Process all actions FIRST, then render once
-var actions = [];
-allUnits.forEach(function(data){
-if(!data.unit.alive) return;
-actions.push({unit:data.unit, isPlayer:data.isPlayer});
-});
-// Execute all actions (animations will be triggered)
-actions.forEach(function(action){
-doAction(action.unit, action.isPlayer);
-});
-// THEN render once after all actions processed
-renderBattle();
-updateCounters();
-// Check win/lose
-const pAlive = playerUnits.filter(u=>u.alive).length;
-const eAlive = enemyUnits.filter(u=>u.alive).length;
-if(eAlive===0){clearInterval(battleInterval);battleRunning=false;showVictory();return;}
-if(pAlive===0){clearInterval(battleInterval);battleRunning=false;showDefeat();return;}
-}, battleSpeed);
+function runBattleLoop(){
+  if(!battleRunning)return;
+  var allUnits=[];
+  playerUnits.filter(function(u){return u.alive;}).forEach(function(u){allUnits.push({unit:u,isPlayer:true,spd:u.spd});});
+  enemyUnits.filter(function(u){return u.alive;}).forEach(function(u){allUnits.push({unit:u,isPlayer:false,spd:u.spd});});
+  allUnits.sort(function(a,b){return b.spd-a.spd;});
+  allUnits.forEach(function(data){
+    if(!data.unit.alive)return;
+    doAction(data.unit,data.isPlayer);
+  });
+  updateHPBars();
+  var pAlive=playerUnits.filter(function(u){return u.alive;}).length;
+  var eAlive=enemyUnits.filter(function(u){return u.alive;}).length;
+  if(eAlive===0){battleRunning=false;showVictory();return;}
+  if(pAlive===0){battleRunning=false;showDefeat();return;}
+  if(battleRunning){setTimeout(runBattleLoop,battleSpeed);}
 }
 
 function showVictory(){
-const data=STAGES[game.stage];
-game.gold+=data.gold;
-game.xp+=data.xp;
-document.getElementById('gold').textContent=game.gold;
-document.getElementById('xp').textContent=game.xp;
-document.getElementById('rewards_text').textContent='獲得 XP: '+data.xp+' | Gold: '+data.gold;
-document.getElementById('modal_victory').classList.add('show');
+  var data=STAGES[game.stage];
+  game.gold+=data.gold;
+  game.xp+=data.xp;
+  document.getElementById("gold").textContent=game.gold;
+  document.getElementById("xp").textContent=game.xp;
+  document.getElementById("rewards_text").textContent="獲得 XP："+data.xp+" | Gold："+data.gold;
+  // Level up! (first 3 victories)
+  if(!game.completedStages.includes(game.stage)){
+    var lvlUpSpirit=team.filter(Boolean)[Math.floor(Math.random()*6)];
+    game.spiritLevels[lvlUpSpirit]=(game.spiritLevels[lvlUpSpirit]||1)+1;
+    document.getElementById("level_up_text").style.display="block";
+    document.getElementById("level_up_text").textContent="⬆️ "+SPIRITS[lvlUpSpirit].name+" 升到 Lv."+(game.spiritLevels[lvlUpSpirit]);
+  }
+  if(!game.completedStages.includes(game.stage)){
+    game.completedStages.push(game.stage);
+    unlockNextStage(game.stage);
+  }
+  document.getElementById("modal_victory").classList.add("show");
 }
 
 function showDefeat(){
-document.getElementById('modal_defeat').classList.add('show');
+  document.getElementById("modal_defeat").classList.add("show");
 }
 
 function nextStage(){
-document.getElementById('modal_victory').classList.remove('show');
-const stages=['1-1','1-2','1-3','Boss'];
-const idx=stages.indexOf(game.stage);
-if(idx<stages.length-1){game.stage=stages[idx+1];document.getElementById('stage_disp').textContent=game.stage;}
-goTeam();
+  closeModal("modal_victory");
+  var idx=STAGES_ORDER.indexOf(game.stage);
+  if(idx<STAGES_ORDER.length-1){game.stage=STAGES_ORDER[idx+1];document.getElementById("stage_disp").textContent=game.stage;}
+  goTeam();
 }
-
 function retryStage(){
-document.getElementById('modal_defeat').classList.remove('show');
-startBattle();
+  closeModal("modal_defeat");
+  startBattle();
 }
 
 // Init
-renderTeamSlots();
+renderTeam();
 renderSpiritPool();
-
-// Test animation with inline style
-setTimeout(function(){
-var testEl = document.getElementById('psprite0');
-if(testEl){
-testEl.style.transform = 'scale(1.5)';
-testEl.style.transition = 'transform 0.3s';
-setTimeout(function(){ testEl.style.transform = 'scale(1)'; }, 300);
-}
-}, 1000);
-
-// Debug - check if spirits are rendered
-console.log('Spirit Tale initialized');
-console.log('SPIRITS:', Object.keys(SPIRITS));
+renderStages();
 </script>
 </body>
 </html>
